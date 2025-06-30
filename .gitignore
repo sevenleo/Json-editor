@@ -1,27 +1,25 @@
+# Arquivos Personalizados
 updates.txt
 ideia.txt
-backups/
-*.bak
-*.pyc
-__pycache__/
-.gitignore
 
-# Arquivos de byte-code Python
+# Arquivos de byte-code e cache do Python
 __pycache__/
 *.py[cod]
-*$py.class
+.pytest_cache/
+
+# Ambientes virtuais
+venv/
+env/
+ENV/
+.venv/
+.env
 
 # Distribuição e empacotamento
 dist/
 build/
 *.egg-info/
 *.egg
-
-# Ambientes virtuais
-venv/
-env/
-ENV/
-.env
+wheels/
 
 # Arquivos de IDE e editores
 .idea/
@@ -50,6 +48,9 @@ tmp/
 *~
 .backup/
 backup/
+backups/
+*.json.bak
+.json_backups/
 
 # Arquivos específicos do sistema
 .DS_Store
@@ -58,10 +59,6 @@ desktop.ini
 
 # Arquivos de configuração locais
 config.local.py
-
-# Arquivos JSON temporários ou de backup
-*.json.bak
-.json_backups/
 
 # Arquivos específicos do aplicativo
 *.tkinter_cache
