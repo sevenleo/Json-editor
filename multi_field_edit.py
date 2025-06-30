@@ -179,32 +179,104 @@ class MultiFieldEditDialog(tk.Toplevel):
             return widget
             
         elif field_type == "list" or field_type.startswith("list["):
-            widget = scrolledtext.ScrolledText(parent, wrap="word", height=4)
+            # Criar um frame para a lista com scrollbar
+            list_container = ttk.Frame(parent)
+            canvas = tk.Canvas(list_container, height=100)
+            scrollbar = ttk.Scrollbar(list_container, orient="vertical", command=canvas.yview)
+            list_frame = ttk.Frame(canvas)
             
-            if current_value is not None:
-                # Formatar a lista como JSON para edição
-                try:
-                    formatted_list = json.dumps(current_value, indent=2)
-                    widget.insert("1.0", formatted_list)
-                except:
-                    widget.insert("1.0", "[]")
-            else:
-                widget.insert("1.0", "[]")
+            # Configurar o canvas
+            canvas.configure(yscrollcommand=scrollbar.set)
+            canvas.pack(side="left", fill="both", expand=True)
+            scrollbar.pack(side="right", fill="y")
+            
+            # Criar janela no canvas para o frame
+            canvas_window = canvas.create_window((0, 0), window=list_frame, anchor="nw")
+            
+            # Configurar o redimensionamento
+            def configure_scroll_region(event):
+                canvas.configure(scrollregion=canvas.bbox("all"))
+                canvas.itemconfig(canvas_window, width=event.width)
+            
+            list_frame.bind("<Configure>", configure_scroll_region)
+            
+            # Criar widget composto
+            widget = ttk.Frame(parent)
+            widget.list_frame = list_frame
+            widget.entries = []
+            widget.canvas = canvas
+            
+            # Botões para adicionar/remover itens
+            btn_frame = ttk.Frame(widget)
+            btn_frame.pack(fill="x", side="bottom", pady=2)
+            
+            ttk.Button(btn_frame, text="Adicionar Item",
+                      command=lambda w=widget, lf=list_frame: self.add_list_item(w, lf)).pack(side="left", padx=5)
+            ttk.Button(btn_frame, text="Remover Último",
+                      command=lambda w=widget: self.remove_list_item(w)).pack(side="left")
+            
+            # Adicionar o container ao widget principal
+            list_container.pack(fill="both", expand=True)
+            
+            # Adicionar itens da lista atual
+            if current_value and isinstance(current_value, list):
+                for item in current_value:
+                    self.add_list_item(widget, list_frame, item)
+            
+            # Se a lista estiver vazia, adicionar um item em branco
+            if not widget.entries:
+                self.add_list_item(widget, list_frame)
                 
             return widget
                 
         elif field_type == "dict" or field_type == "object":
-            widget = scrolledtext.ScrolledText(parent, wrap="word", height=4)
+            # Criar um frame para o dicionário com scrollbar
+            dict_container = ttk.Frame(parent)
+            canvas = tk.Canvas(dict_container, height=100)
+            scrollbar = ttk.Scrollbar(dict_container, orient="vertical", command=canvas.yview)
+            dict_frame = ttk.Frame(canvas)
             
-            if current_value is not None:
-                # Formatar o dicionário como JSON para edição
-                try:
-                    formatted_dict = json.dumps(current_value, indent=2)
-                    widget.insert("1.0", formatted_dict)
-                except:
-                    widget.insert("1.0", "{}")
-            else:
-                widget.insert("1.0", "{}")
+            # Configurar o canvas
+            canvas.configure(yscrollcommand=scrollbar.set)
+            canvas.pack(side="left", fill="both", expand=True)
+            scrollbar.pack(side="right", fill="y")
+            
+            # Criar janela no canvas para o frame
+            canvas_window = canvas.create_window((0, 0), window=dict_frame, anchor="nw")
+            
+            # Configurar o redimensionamento
+            def configure_scroll_region(event):
+                canvas.configure(scrollregion=canvas.bbox("all"))
+                canvas.itemconfig(canvas_window, width=event.width)
+            
+            dict_frame.bind("<Configure>", configure_scroll_region)
+            
+            # Criar widget composto
+            widget = ttk.Frame(parent)
+            widget.dict_frame = dict_frame
+            widget.entries = []
+            widget.canvas = canvas
+            
+            # Botões para adicionar/remover pares
+            btn_frame = ttk.Frame(widget)
+            btn_frame.pack(fill="x", side="bottom", pady=2)
+            
+            ttk.Button(btn_frame, text="Adicionar Par",
+                      command=lambda w=widget, df=dict_frame: self.add_dict_pair(w, df)).pack(side="left", padx=5)
+            ttk.Button(btn_frame, text="Remover Último",
+                      command=lambda w=widget: self.remove_dict_pair(w)).pack(side="left")
+            
+            # Adicionar o container ao widget principal
+            dict_container.pack(fill="both", expand=True)
+            
+            # Adicionar pares do dicionário atual
+            if current_value and isinstance(current_value, dict):
+                for key, value in current_value.items():
+                    self.add_dict_pair(widget, dict_frame, key, value)
+            
+            # Se o dicionário estiver vazio, adicionar um par em branco
+            if not widget.entries:
+                self.add_dict_pair(widget, dict_frame)
                 
             return widget
         
@@ -250,22 +322,86 @@ class MultiFieldEditDialog(tk.Toplevel):
                 
             elif field_type == "int":
                 value = widget.get()
-                return int(value) if value else 0
+                # Se o valor estiver vazio e não for um campo obrigatório, permitir null
+                if not value:
+                    is_required = field_info.get("required", False)
+                    return None if not is_required else 0
+                return int(value)
                 
             elif field_type == "float":
                 value = widget.get()
-                return float(value) if value else 0.0
+                # Se o valor estiver vazio e não for um campo obrigatório, permitir null
+                if not value:
+                    is_required = field_info.get("required", False)
+                    return None if not is_required else 0.0
+                return float(value)
                 
             elif field_type == "bool":
                 return widget.var.get()
                 
             elif field_type == "list" or field_type.startswith("list["):
-                value = widget.get("1.0", "end-1c")
-                return json.loads(value) if value.strip() else []
+                # Coletar valores dos campos de entrada
+                list_values = []
+                inner_type = field_type[5:-1] if field_type.startswith("list[") else None
+                
+                for entry_widget in widget.entries:
+                    value = entry_widget.get().strip()
+                    if value:  # Ignorar entradas vazias
+                        # Converter para o tipo correto
+                        if inner_type == "int":
+                            try:
+                                value = int(value)
+                            except ValueError:
+                                raise ValueError(f"O valor '{value}' não é um número inteiro válido")
+                        elif inner_type == "float":
+                            try:
+                                value = float(value)
+                            except ValueError:
+                                raise ValueError(f"O valor '{value}' não é um número válido")
+                        elif inner_type == "bool":
+                            value = value.lower()
+                            if value in ("true", "verdadeiro", "1", "sim", "s", "t"):
+                                value = True
+                            elif value in ("false", "falso", "0", "não", "nao", "n", "f"):
+                                value = False
+                            else:
+                                raise ValueError(f"O valor '{value}' não é um booleano válido")
+                        # Para string, mantemos como está
+                        list_values.append(value)
+                
+                return list_values
                 
             elif field_type == "dict" or field_type == "object":
-                value = widget.get("1.0", "end-1c")
-                return json.loads(value) if value.strip() else {}
+                # Coletar pares chave-valor dos campos de entrada
+                dict_values = {}
+                
+                for key_widget, value_widget in widget.entries:
+                    key = key_widget.get().strip()
+                    value = value_widget.get().strip()
+                    
+                    if key:  # Ignorar chaves vazias
+                        # Tentar detectar o tipo do valor automaticamente
+                        if not value:
+                            # Valor vazio, manter como string
+                            dict_values[key] = value
+                        elif value.lower() in ("true", "verdadeiro", "1", "sim", "s", "t"):
+                            dict_values[key] = True
+                        elif value.lower() in ("false", "falso", "0", "não", "nao", "n", "f"):
+                            dict_values[key] = False
+                        else:
+                            # Tentar converter para número
+                            try:
+                                if "." in value or "," in value:
+                                    # Substituir vírgula por ponto para float
+                                    value = value.replace(",", ".")
+                                    dict_values[key] = float(value)
+                                else:
+                                    dict_values[key] = int(value)
+                            except ValueError:
+                                # Se não for número, manter como string
+                                dict_values[key] = value
+                
+                return dict_values
                 
             return None
             
@@ -326,3 +462,78 @@ class MultiFieldEditDialog(tk.Toplevel):
         """Cancela a edição."""
         self.result = None
         self.destroy()
+        
+    def add_list_item(self, widget, list_frame, value=None):
+        """Adiciona um novo item à lista."""
+        # Frame para o item
+        item_frame = ttk.Frame(list_frame)
+        item_frame.pack(fill="x", pady=2, padx=2)
+        
+        # Entrada para o valor do item
+        entry = ttk.Entry(item_frame)
+        entry.pack(side="left", fill="x", expand=True)
+        
+        # Preencher com o valor, se fornecido
+        if value is not None:
+            entry.insert(0, str(value))
+            
+        # Adicionar à lista de entradas
+        widget.entries.append(entry)
+        
+        # Atualizar a região de rolagem
+        widget.canvas.update_idletasks()
+        widget.canvas.configure(scrollregion=widget.canvas.bbox("all"))
+        
+        return entry
+        
+    def remove_list_item(self, widget):
+        """Remove o último item da lista."""
+        if widget.entries:
+            # Remover o último widget de entrada
+            entry = widget.entries.pop()
+            entry.master.destroy()  # Destruir o frame pai
+            
+            # Atualizar a região de rolagem
+            widget.canvas.update_idletasks()
+            widget.canvas.configure(scrollregion=widget.canvas.bbox("all"))
+            
+    def add_dict_pair(self, widget, dict_frame, key=None, value=None):
+        """Adiciona um novo par chave-valor ao dicionário."""
+        # Frame para o par
+        pair_frame = ttk.Frame(dict_frame)
+        pair_frame.pack(fill="x", pady=2, padx=2)
+        
+        # Entrada para a chave
+        key_entry = ttk.Entry(pair_frame, width=15)
+        key_entry.pack(side="left", padx=(0, 5))
+        ttk.Label(pair_frame, text=":").pack(side="left", padx=2)
+        
+        # Entrada para o valor
+        value_entry = ttk.Entry(pair_frame)
+        value_entry.pack(side="left", fill="x", expand=True)
+        
+        # Preencher com os valores, se fornecidos
+        if key is not None:
+            key_entry.insert(0, str(key))
+        if value is not None:
+            value_entry.insert(0, str(value))
+            
+        # Adicionar à lista de entradas
+        widget.entries.append((key_entry, value_entry))
+        
+        # Atualizar a região de rolagem
+        widget.canvas.update_idletasks()
+        widget.canvas.configure(scrollregion=widget.canvas.bbox("all"))
+        
+        return key_entry, value_entry
+        
+    def remove_dict_pair(self, widget):
+        """Remove o último par do dicionário."""
+        if widget.entries:
+            # Remover o último par de widgets
+            pair = widget.entries.pop()
+            pair[0].master.destroy()  # Destruir o frame pai
+            
+            # Atualizar a região de rolagem
+            widget.canvas.update_idletasks()
+            widget.canvas.configure(scrollregion=widget.canvas.bbox("all"))
