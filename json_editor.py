@@ -394,6 +394,9 @@ class EditDialog(tk.Toplevel):
 class JsonEditorApp:
     """Aplicação principal para edição de arquivos JSON."""
     
+    # Importação da classe MultiFieldEditDialog
+    from multi_field_edit import MultiFieldEditDialog
+    
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("Editor de JSON com Esquema")
@@ -590,7 +593,12 @@ class JsonEditorApp:
         tree_frame.grid_columnconfigure(0, weight=1)
         
         # Configurar evento de duplo clique para edição
+        # Quando o usuário clica duas vezes, passamos o evento para que
+        # o método edit_selected possa identificar a coluna clicada
         self.tree.bind("<Double-1>", lambda e: self.edit_selected())
+        
+        # Configurar evento de clique único na coluna para destacá-la
+        self.tree.bind("<ButtonRelease-1>", self.highlight_column)
     
     def toggle_theme(self):
         """Alterna entre temas claro e escuro."""
@@ -834,10 +842,10 @@ class JsonEditorApp:
         self.tree.tag_configure("invalid", background=self.theme["invalid_bg"])
     
     def add_entry(self):
-        """Adiciona uma nova entrada vazia."""
+        """Adiciona uma nova entrada através do diálogo de múltiplos campos."""
         if not self.json_model:
             messagebox.showerror(
-                "Erro", 
+                "Erro",
                 "Nenhum modelo carregado. Carregue um modelo primeiro."
             )
             return
@@ -845,22 +853,35 @@ class JsonEditorApp:
         # Criar entrada vazia baseada no modelo
         new_entry = self.json_model.create_empty_entry()
         
-        # Adicionar à lista de dados
-        self.data.append(new_entry)
+        # Abrir diálogo para preencher todos os campos de uma vez
+        dialog = self.MultiFieldEditDialog(
+            self.root,
+            self.json_model,
+            new_entry,
+            self.theme
+        )
         
-        # Adicionar ao histórico
-        self.add_to_history()
+        # Esperar pelo fechamento do diálogo
+        self.root.wait_window(dialog)
         
-        # Atualizar visualização
-        self.update_tree()
-        
-        # Selecionar a nova entrada
-        last_item = self.tree.get_children()[-1]
-        self.tree.selection_set(last_item)
-        self.tree.see(last_item)
-        
-        # Editar a nova entrada imediatamente
-        self.edit_selected()
+        # Verificar se o usuário confirmou ou cancelou
+        if dialog.result:
+            # Usar os valores informados pelo usuário
+            new_entry = dialog.result
+            
+            # Adicionar à lista de dados
+            self.data.append(new_entry)
+            
+            # Adicionar ao histórico
+            self.add_to_history()
+            
+            # Atualizar visualização
+            self.update_tree()
+            
+            # Selecionar a nova entrada
+            last_item = self.tree.get_children()[-1]
+            self.tree.selection_set(last_item)
+            self.tree.see(last_item)
     
     def edit_selected(self):
         """Edita a entrada selecionada."""
@@ -882,21 +903,20 @@ class JsonEditorApp:
             messagebox.showerror("Erro", "Índice de entrada inválido.")
             return
             
-        # Abrir diálogo de edição para cada campo
+        # Obter a entrada a ser editada
         entry = self.data[item_index]
-        updated = False
         
-        for field in self.json_model.get_field_names():
-            field_type = self.json_model.get_field_type(field)
-            is_required = self.json_model.is_field_required(field)
-            current_value = entry.get(field)
-            
-            dialog = EditDialog(
-                self.root, 
-                field, 
-                field_type, 
-                current_value, 
-                is_required,
+        # Verificar se o usuário clicou em uma coluna específica
+        column = self.tree.identify_column(self.tree.winfo_pointerx() - self.tree.winfo_rootx())
+        
+        # Se nenhuma coluna específica foi clicada ou foi um duplo clique sem foco em coluna,
+        # abrir o diálogo para editar todos os campos de uma vez
+        if not column or column == "#0":
+            # Usar o novo diálogo multi-campo
+            dialog = self.MultiFieldEditDialog(
+                self.root,
+                self.json_model,
+                entry,
                 self.theme
             )
             
@@ -904,11 +924,51 @@ class JsonEditorApp:
             self.root.wait_window(dialog)
             
             # Processar resultado
-            if dialog.result is not None:
-                entry[field] = dialog.result
-                updated = True
+            if dialog.result:
+                # Atualizar a entrada com todos os valores de uma vez
+                for field, value in dialog.result.items():
+                    entry[field] = value
+                
+                # Adicionar ao histórico
+                self.add_to_history()
+                
+                # Atualizar visualização
+                self.update_tree()
+                
+                # Manter seleção
+                self.tree.selection_set(item_id)
+                self.tree.see(item_id)
+            
+            return
         
-        if updated:
+        # Se uma coluna específica foi clicada, editar apenas esse campo
+        column_index = int(column.replace('#', '')) - 1
+        if column_index < 0 or column_index >= len(self.tree["columns"]):
+            return
+        
+        # Obter o nome do campo correspondente à coluna
+        field = self.tree["columns"][column_index]
+        field_type = self.json_model.get_field_type(field)
+        is_required = self.json_model.is_field_required(field)
+        current_value = entry.get(field)
+        
+        # Abrir diálogo para editar apenas este campo
+        dialog = EditDialog(
+            self.root,
+            field,
+            field_type,
+            current_value,
+            is_required,
+            self.theme
+        )
+        
+        # Esperar pelo fechamento do diálogo
+        self.root.wait_window(dialog)
+        
+        # Processar resultado
+        if dialog.result is not None:
+            entry[field] = dialog.result
+            
             # Adicionar ao histórico
             self.add_to_history()
             
@@ -1165,3 +1225,30 @@ class JsonEditorApp:
         if next_state is not None:
             self.data = next_state
             self.update_tree()
+            
+    def highlight_column(self, event):
+        """Destaca a coluna clicada para melhor visualização."""
+        if not self.json_model:
+            return
+            
+        # Identificar a coluna clicada
+        column = self.tree.identify_column(event.x)
+        
+        if not column or column == "#0":
+            return
+            
+        # Obter o índice da coluna (0-based)
+        column_index = int(column.replace('#', '')) - 1
+        
+        if column_index < 0 or column_index >= len(self.tree["columns"]):
+            return
+            
+        # Obter o nome do campo correspondente à coluna
+        field = self.tree["columns"][column_index]
+        field_type = self.json_model.get_field_type(field)
+        is_required = self.json_model.is_field_required(field)
+        
+        # Atualizar a barra de status com informação sobre o campo
+        self.status_var.set(
+            f"Campo: {field} | Tipo: {field_type} | Obrigatório: {'Sim' if is_required else 'Não'}"
+        )

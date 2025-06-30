@@ -56,3 +56,4 @@ MAS FAÇA alguns ajustes
 1 quero poder editar um campo especifico, porem quando clico em editar sou obrigado a precorrer todas as colunas do elemento ate chegar onde quero editar, aproveite para mostrar tambem quais tipos de dados devem ser inseridos e se o campo é obrigatorio
 2 quando inserir um novo elemento abra uma grande janela com inputs para cada coluna do novo elemento e indique quais sao obrigatorios ou nao e os tipos de dados que devem ser inseridos
 3 remova a opcao de tema escuro ficou feio
+4 sempre salve o contexto do projeto no arquivo context_SUBTITULO.txt , assim sempre que encerrar uma tarefa pode limpar o contexto para abrir espaco e ainda pdoe usar depois quando precisar
