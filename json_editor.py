@@ -239,22 +239,38 @@ class EditDialog(tk.Toplevel):
         self.geometry(f"{window_width}x{window_height}+{x}+{y}")
         
         # Criar widgets
-        frame = ttk.Frame(self)
-        frame.pack(padx=10, pady=10, fill="both", expand=True)
+        # Usar grid em vez de pack para melhor controle do layout
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
         
-        ttk.Label(frame, text=f"Campo: {self.field_name}").pack(pady=(0, 5), anchor="w")
-        ttk.Label(frame, text=f"Tipo: {self.field_type}").pack(pady=(0, 5), anchor="w")
+        main_frame = ttk.Frame(self)
+        main_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        main_frame.columnconfigure(0, weight=1)
+        
+        # Frame para as informações do campo
+        info_frame = ttk.Frame(main_frame)
+        info_frame.grid(row=0, column=0, sticky="ew", pady=(0, 5))
+        
+        ttk.Label(info_frame, text=f"Campo: {self.field_name}").pack(pady=(0, 5), anchor="w")
+        ttk.Label(info_frame, text=f"Tipo: {self.field_type}").pack(pady=(0, 5), anchor="w")
         
         if self.is_required:
-            required_label = ttk.Label(frame, text="Campo obrigatório")
-            required_label.pack(pady=(0, 10), anchor="w")
+            required_label = ttk.Label(info_frame, text="Campo obrigatório")
+            required_label.pack(pady=(0, 5), anchor="w")
+        
+        # Frame para o widget de edição
+        edit_frame = ttk.Frame(main_frame)
+        edit_frame.grid(row=1, column=0, sticky="nsew", pady=5)
+        edit_frame.columnconfigure(0, weight=1)
+        edit_frame.rowconfigure(0, weight=1)
+        main_frame.rowconfigure(1, weight=1)
         
         # Criar widget de edição apropriado para o tipo
-        self.value_widget = self.create_type_widget(frame)
+        self.value_widget = self.create_type_widget(edit_frame)
         
-        # Botões
-        button_frame = ttk.Frame(frame)
-        button_frame.pack(pady=10, fill="x")
+        # Botões sempre visíveis na parte inferior
+        button_frame = ttk.Frame(main_frame)
+        button_frame.grid(row=2, column=0, sticky="ew", pady=(10, 0))
         
         ttk.Button(button_frame, text="Cancelar", command=self.cancel).pack(side="right", padx=5)
         ttk.Button(button_frame, text="Salvar", command=self.save).pack(side="right")
@@ -290,9 +306,9 @@ class EditDialog(tk.Toplevel):
         elif self.field_type == "list" or self.field_type.startswith("list["):
             widget = ScrolledText(parent, wrap="word", height=10)
             
-            # Frame para edição da lista
+            # Frame para edição da lista com altura máxima definida
             list_frame = ttk.Frame(parent)
-            list_frame.pack(fill="both", expand=True)
+            list_frame.pack(fill="both", expand=True, pady=5)
             
             # Lista para armazenar widgets de entrada
             widget.entries = []
@@ -319,9 +335,9 @@ class EditDialog(tk.Toplevel):
         elif self.field_type == "dict" or self.field_type == "object":
             widget = ScrolledText(parent, wrap="word", height=10)
             
-            # Frame para edição do dicionário
+            # Frame para edição do dicionário com altura máxima definida
             dict_frame = ttk.Frame(parent)
-            dict_frame.pack(fill="both", expand=True)
+            dict_frame.pack(fill="both", expand=True, pady=5)
             
             # Lista para armazenar pares de widgets de entrada (chave, valor)
             widget.entries = []

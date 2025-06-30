@@ -22,6 +22,10 @@ class MultiFieldEditDialog(tk.Toplevel):
         self.title("Editar Campos")
         self.configure(bg=self.theme.get("bg", "#F0F0F0"))
         
+        # Usar grid para melhor controle do layout
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+        
         # Tamanho da janela
         window_width = 600
         window_height = 500
@@ -38,47 +42,56 @@ class MultiFieldEditDialog(tk.Toplevel):
         self.geometry(f"{window_width}x{window_height}+{x}+{y}")
         self.resizable(True, True)
         
+        # Container principal que ocupará 90% da altura, deixando espaço para os botões
+        container_frame = ttk.Frame(self)
+        container_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        container_frame.columnconfigure(0, weight=1)
+        container_frame.rowconfigure(0, weight=1)
+        
         # Frame principal com scrollbar
-        main_frame = ttk.Frame(self)
-        main_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        main_frame = ttk.Frame(container_frame)
+        main_frame.grid(row=0, column=0, sticky="nsew")
+        main_frame.columnconfigure(0, weight=1)
+        main_frame.rowconfigure(0, weight=1)
         
         # Canvas para scroll
         canvas = tk.Canvas(main_frame, bg=self.theme.get("bg", "#F0F0F0"))
-        canvas.pack(side="left", fill="both", expand=True)
+        canvas.grid(row=0, column=0, sticky="nsew")
         
         # Scrollbar
         scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
-        scrollbar.pack(side="right", fill="y")
+        scrollbar.grid(row=0, column=1, sticky="ns")
         canvas.configure(yscrollcommand=scrollbar.set)
         
         # Frame para conteúdo
         content_frame = ttk.Frame(canvas)
         canvas_window = canvas.create_window((0, 0), window=content_frame, anchor="nw")
+        content_frame.columnconfigure(2, weight=1)
         
         # Título
         title_label = ttk.Label(
-            content_frame, 
-            text="Editar Campos", 
+            content_frame,
+            text="Editar Campos",
             font=("", 12, "bold")
         )
         title_label.grid(row=0, column=0, columnspan=3, pady=(0, 10), sticky="w")
         
         # Cabeçalhos
         ttk.Label(
-            content_frame, 
-            text="Campo", 
+            content_frame,
+            text="Campo",
             font=("", 10, "bold")
         ).grid(row=1, column=0, padx=5, pady=5, sticky="w")
         
         ttk.Label(
-            content_frame, 
-            text="Tipo", 
+            content_frame,
+            text="Tipo",
             font=("", 10, "bold")
         ).grid(row=1, column=1, padx=5, pady=5, sticky="w")
         
         ttk.Label(
-            content_frame, 
-            text="Valor", 
+            content_frame,
+            text="Valor",
             font=("", 10, "bold")
         ).grid(row=1, column=2, padx=5, pady=5, sticky="w")
         
@@ -100,11 +113,11 @@ class MultiFieldEditDialog(tk.Toplevel):
                 content_frame,
                 text=f"{field} {'*' if is_required else ''}"
             )
-            field_label.grid(row=row, column=0, padx=5, pady=5, sticky="w")
+            field_label.grid(row=row, column=0, padx=5, pady=5, sticky="nw")
             
             # Tipo do campo
             type_label = ttk.Label(content_frame, text=field_type)
-            type_label.grid(row=row, column=1, padx=5, pady=5, sticky="w")
+            type_label.grid(row=row, column=1, padx=5, pady=5, sticky="nw")
             
             # Widget para o valor
             value_widget = self.create_field_widget(content_frame, field_type, current_value)
@@ -119,22 +132,19 @@ class MultiFieldEditDialog(tk.Toplevel):
             
             row += 1
         
-        # Configurar expansão da coluna de valor
-        content_frame.grid_columnconfigure(2, weight=1)
-        
-        # Botões
+        # Botões sempre visíveis na parte inferior
         button_frame = ttk.Frame(self)
-        button_frame.pack(fill="x", padx=10, pady=10)
+        button_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=10)
         
         ttk.Button(
-            button_frame, 
-            text="Cancelar", 
+            button_frame,
+            text="Cancelar",
             command=self.cancel
         ).pack(side="right", padx=5)
         
         ttk.Button(
-            button_frame, 
-            text="Salvar", 
+            button_frame,
+            text="Salvar",
             command=self.save
         ).pack(side="right")
         
@@ -179,7 +189,7 @@ class MultiFieldEditDialog(tk.Toplevel):
             return widget
             
         elif field_type == "list" or field_type.startswith("list["):
-            # Criar um frame para a lista com scrollbar
+            # Criar um frame para a lista com scrollbar e altura limitada
             list_container = ttk.Frame(parent)
             canvas = tk.Canvas(list_container, height=100)
             scrollbar = ttk.Scrollbar(list_container, orient="vertical", command=canvas.yview)
@@ -230,7 +240,7 @@ class MultiFieldEditDialog(tk.Toplevel):
             return widget
                 
         elif field_type == "dict" or field_type == "object":
-            # Criar um frame para o dicionário com scrollbar
+            # Criar um frame para o dicionário com scrollbar e altura limitada
             dict_container = ttk.Frame(parent)
             canvas = tk.Canvas(dict_container, height=100)
             scrollbar = ttk.Scrollbar(dict_container, orient="vertical", command=canvas.yview)

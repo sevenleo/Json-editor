@@ -12,17 +12,8 @@
       "email": "ricardo@exemplo.com",
       "bio": "Desenvolvedor Python com 8 anos de experiência"
     },
-    "categories": [
-      "Programação",
-      "Python",
-      "Tutorial"
-    ],
-    "tags": [
-      "python",
-      "flask",
-      "django",
-      "desenvolvimento web"
-    ],
+    "categories": ["Programação", "Python", "Tutorial"],
+    "tags": ["python", "flask", "django", "desenvolvimento web"],
     "stats": {
       "views": 3450,
       "likes": 210,
@@ -42,20 +33,12 @@
         "date": "2023-05-18T15:45:00Z"
       }
     ],
-    "related_items": [
-      1005,
-      1008,
-      1012
-    ],
+    "related_items": [1005, 1008, 1012],
     "price": 0.0,
     "metadata": {
       "reading_time": 15,
       "difficulty": "Intermediário",
-      "keywords": [
-        "python",
-        "programação",
-        "tutorial"
-      ]
+      "keywords": ["python", "programação", "tutorial"]
     }
   },
   {
@@ -70,17 +53,8 @@
       "email": "ana@exemplo.com",
       "bio": "Cientista de dados e instrutora"
     },
-    "categories": [
-      "Análise de Dados",
-      "Python",
-      "Curso"
-    ],
-    "tags": [
-      "pandas",
-      "matplotlib",
-      "análise",
-      "ciência de dados"
-    ],
+    "categories": ["Análise de Dados", "Python", "Curso"],
+    "tags": ["pandas", "matplotlib", "análise", "ciência de dados"],
     "stats": {
       "views": 5200,
       "likes": 430,
@@ -95,11 +69,8 @@
         "date": "2023-04-12T14:22:00Z"
       }
     ],
-    "related_items": [
-      1004,
-      1006
-    ],
-    "price": 199.9,
+    "related_items": [1004, 1006],
+    "price": 199.90,
     "discount": 20.0,
     "metadata": {
       "duration": "20 horas",
@@ -117,12 +88,8 @@
       "name": "Carlos Santos",
       "email": "carlos@exemplo.com"
     },
-    "categories": [
-      "Web",
-      "Frontend",
-      "Backend"
-    ],
-    "price": 149.5,
+    "categories": ["Web", "Frontend", "Backend"],
+    "price": 149.50,
     "discount": 15.0
   },
   {
@@ -137,12 +104,8 @@
       "email": "juliana@exemplo.com",
       "bio": "Especialista em IA e Machine Learning"
     },
-    "tags": [
-      "machine learning",
-      "inteligência artificial",
-      "iniciante"
-    ],
-    "price": 49.9,
+    "tags": ["machine learning", "inteligência artificial", "iniciante"],
+    "price": 49.90,
     "metadata": {
       "pages": 150,
       "format": "PDF, EPUB, MOBI"
@@ -159,16 +122,12 @@
       "name": "Fernando Costa",
       "email": "fernando@exemplo.com"
     },
-    "categories": [
-      "DevOps",
-      "Containers",
-      "Workshop"
-    ],
+    "categories": ["DevOps", "Containers", "Workshop"],
     "stats": {
       "views": 1850,
       "likes": 145,
       "registrations": 63
     },
-    "price": 299.9
+    "price": 299.90
   }
 ]
