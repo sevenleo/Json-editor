@@ -59,7 +59,7 @@ config.local.py
 *.tkinter_cache
 
 updates.txt
-prompt.txt
+ideia.txt
 backups/
 *.bak
 *.pyc
