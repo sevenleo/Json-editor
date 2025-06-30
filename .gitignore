@@ -1,3 +1,11 @@
+updates.txt
+ideia.txt
+backups/
+*.bak
+*.pyc
+__pycache__/
+.gitignore
+
 # Arquivos de byte-code Python
 __pycache__/
 *.py[cod]
@@ -58,10 +66,3 @@ config.local.py
 # Arquivos específicos do aplicativo
 *.tkinter_cache
 
-updates.txt
-ideia.txt
-backups/
-*.bak
-*.pyc
-__pycache__/
-.gitignore
