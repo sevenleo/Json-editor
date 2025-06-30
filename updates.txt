@@ -1,0 +1,58 @@
+IDEIA - 1
+Separação entre dados e definição
+Mantenha o arquivo __meta__ separado e reutilizável para múltiplos tipos de dados.
+Nomeie por contexto, como modelo_usuario.json, modelo_produto.json, etc.
+
+
+IDEIA - 2
+Interface estilo planilha
+Use ttk.Treeview com colunas geradas dinamicamente a partir do __meta__.
+Ao clicar em uma célula, exibir um editor apropriado (input, dropdown, checkbox, etc.).
+
+
+IDEIA - 3
+Validação em tempo real
+Valide os tipos conforme o __meta__ enquanto o usuário digita.
+Exiba feedback visual (cor de fundo vermelha, tooltips de erro) para valores inválidos.
+
+
+IDEIA - 4
+Suporte a tipos compostos
+Permitir campos com type: "list[object]" abrirem sub-interfaces específicas.
+
+
+IDEIA - 5
+Geração de JSON em branco
+Oferecer opção para criar novos arquivos JSON com base apenas no __meta__.
+Preencher campos obrigatórios automaticamente com valores padrão.
+
+
+IDEIA - 6
+Exportação e importação CSV
+Permitir exportar os dados para CSV (quando a estrutura for simples).
+Facilitar a manipulação externa em planilhas como Excel ou Google Sheets.
+
+
+IDEIA - 7
+Foco em acessibilidade e usabilidade
+Suporte a tema claro/escuro.
+Drag-and-drop para os arquivos de entrada.
+Interface responsiva e amigável a usuários não técnicos.
+
+
+
+
+
+
+
+
+
+
+
+FIXES
+
+esta funcionando 
+MAS FAÇA alguns ajustes
+1 quero poder editar um campo especifico, porem quando clico em editar sou obrigado a precorrer todas as colunas do elemento ate chegar onde quero editar, aproveite para mostrar tambem quais tipos de dados devem ser inseridos e se o campo é obrigatorio
+2 quando inserir um novo elemento abra uma grande janela com inputs para cada coluna do novo elemento e indique quais sao obrigatorios ou nao e os tipos de dados que devem ser inseridos
+3 remova a opcao de tema escuro ficou feio

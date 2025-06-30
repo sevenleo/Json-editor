@@ -1,0 +1,66 @@
+[
+  {
+    "name": "Maria Oliveira",
+    "email": "maria@exemplo.com",
+    "age": 25,
+    "active": true,
+    "tags": [
+      "cliente",
+      "normal"
+    ],
+    "address": {
+      "street": "Avenida Teste",
+      "number": 456,
+      "city": "Rio de Janeiro",
+      "zip": "20000-000",
+      "state": "RJ"
+    },
+    "phone_numbers": [
+      "(21) 99876-5432"
+    ],
+    "salary": 4500.75,
+    "hire_date": "2021-03-10",
+    "department": "Marketing"
+  },
+  {
+    "name": "Pedro Santos",
+    "email": "pedro@exemplo.com",
+    "active": false,
+    "address": {
+      "street": "Alameda Inovação",
+      "number": 789,
+      "city": "Belo Horizonte",
+      "state": "MG"
+    },
+    "department": "TI"
+  },
+  {
+    "name": "Ana Souza",
+    "email": "ana@exemplo.com",
+    "age": 28,
+    "active": true,
+    "tags": [
+      "funcionário",
+      "atendimento"
+    ],
+    "salary": 3800.0,
+    "hire_date": "2022-05-20",
+    "department": "Suporte"
+  },
+  {
+    "name": "Carlos Ferreira",
+    "age": 45,
+    "active": true,
+    "tags": [
+      "gerente",
+      "administrativo"
+    ],
+    "phone_numbers": [
+      "(31) 3333-4444",
+      "(31) 99999-8888"
+    ],
+    "salary": 8500.0,
+    "hire_date": "2018-11-05",
+    "department": "Administrativo"
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "__meta__": {
+    "id": { "type": "int", "required": true },
+    "title": { "type": "str", "required": true },
+    "description": { "type": "str", "required": false },
+    "published": { "type": "bool", "required": true },
+    "created_at": { "type": "str", "required": true },
+    "updated_at": { "type": "str", "required": false },
+    "author": { "type": "dict", "required": true },
+    "categories": { "type": "list[str]", "required": false },
+    "tags": { "type": "list[str]", "required": false },
+    "stats": { "type": "dict", "required": false },
+    "comments": { "type": "list", "required": false },
+    "related_items": { "type": "list[int]", "required": false },
+    "price": { "type": "float", "required": false },
+    "discount": { "type": "float", "required": false },
+    "metadata": { "type": "dict", "required": false }
+  }
+}

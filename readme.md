@@ -1,35 +1,127 @@
-A system using Python and the Tkinter library, capable of managing JSON files through a graphical interface. The system should:
+# JSON Database Editor
 
-Load .json files and understand their structure, including nested objects and arrays.
+Um sistema de gerenciamento de arquivos JSON com interface gráfica, desenvolvido em Python com Tkinter. Permite editar, validar e manter arquivos JSON estruturados de acordo com um esquema definido.
 
-Dynamically generate a visual CRUD interface (Create, Read, Update, Delete) that allows:
+## Descrição
 
-Viewing the JSON structure as a tree.
+Este sistema foi projetado para funcionar como um editor visual de banco de dados JSON, permitindo:
 
-Editing primitive values (string, number, boolean).
+- Validar dados JSON contra um esquema definido em um arquivo modelo
+- Visualizar e editar dados de forma amigável com widgets apropriados para cada tipo de dado
+- Adicionar e remover registros seguindo o esquema definido
+- Buscar informações, navegar e manipular registros facilmente
+- Exportar e salvar os dados editados
 
-Adding new fields to objects or new elements to arrays.
+## Requisitos
 
-Removing keys, elements, or entire structures.
+- Python 3.6 ou superior
+- Tkinter (incluído na maioria das instalações padrão do Python)
+- Para suporte completo de arrastar e soltar no Windows, o módulo pywin32 é recomendado:
+  ```
+  pip install pywin32
+  ```
 
-Save changes back to the original file or export to a new .json file.
+## Instalação
 
-Detect and preserve the data type when editing values.
+1. Clone este repositório ou baixe os arquivos
+2. Certifique-se de que Python 3.6+ está instalado
+3. (Opcional) Instale pywin32 para suporte completo de arrastar e soltar no Windows
 
-Optionally validate the content based on a .schema.json file if provided.
+## Como Usar
 
-Provide a simple and intuitive GUI that adapts to the complexity of the JSON structure.
+Execute o arquivo principal:
 
-Additional desired features:
+```
+python main.py
+```
 
-Drag and drop support for JSON files.
+### Fluxo básico de uso:
 
-Search functionality for keys or values within the JSON.
+1. Carregue um arquivo de modelo JSON (contendo a definição `__meta__`)
+2. Carregue um arquivo de dados JSON ou crie um novo conjunto de dados
+3. Edite, adicione ou remova registros conforme necessário
+4. Salve as alterações no arquivo original ou em um novo arquivo
 
-Change history with undo/redo support.
+## Estrutura do Arquivo Modelo
 
-Support for large files, with optimized parsing.
+O arquivo de modelo deve conter um objeto JSON com uma propriedade `__meta__` que define a estrutura esperada dos dados:
 
-Light and dark mode toggle.
+```json
+{
+  "__meta__": {
+    "nome_do_campo": {
+      "type": "tipo_de_dado",
+      "required": true_ou_false
+    },
+    ...
+  }
+}
+```
 
-The goal is to create a lightweight, cross-platform application that's easy to use for both technical and non-technical users, focusing on safe and organized JSON data editing.
+### Tipos de dados suportados:
+
+- `str` - Strings
+- `int` - Números inteiros
+- `float` - Números de ponto flutuante
+- `bool` - Valores booleanos (verdadeiro/falso)
+- `list` - Listas genéricas
+- `list[tipo]` - Listas tipadas (ex: `list[str]` para lista de strings)
+- `dict` ou `object` - Objetos/dicionários aninhados
+
+### Exemplo:
+
+```json
+{
+  "__meta__": {
+    "name": { "type": "str", "required": true },
+    "email": { "type": "str", "required": false },
+    "age": { "type": "int", "required": false },
+    "active": { "type": "bool", "required": true },
+    "tags": { "type": "list[str]", "required": false },
+    "address": { "type": "dict", "required": false }
+  }
+}
+```
+
+## Funcionalidades
+
+### Principais recursos:
+
+- **Validação em tempo real**: Identifica campos obrigatórios ausentes e tipos de dados incorretos
+- **Interface tipo planilha**: Visualização em grade com edição de célula individualizada
+- **Edição apropriada por tipo**: Inputs de texto, checkboxes, campos numéricos, etc.
+- **Pesquisa**: Busca por conteúdo em qualquer campo
+- **Histórico de ações**: Suporte a operações de desfazer/refazer
+- **Tema claro/escuro**: Alterna entre temas para melhor conforto visual
+- **Arrastar e soltar**: Suporte para carregamento de arquivos via drag & drop
+- **Exportação**: Salva dados no formato JSON
+
+### Atalhos de teclado:
+
+- `Ctrl+O` - Carregar arquivo de modelo
+- `Ctrl+D` - Carregar arquivo de dados
+- `Ctrl+S` - Salvar dados
+- `Ctrl+N` - Adicionar nova entrada
+- `Delete` - Excluir entrada selecionada
+- `Ctrl+Z` - Desfazer
+- `Ctrl+Y` - Refazer
+- `Ctrl+F` - Focar no campo de pesquisa
+- `F3` - Próximo resultado de pesquisa
+- `Shift+F3` - Resultado anterior de pesquisa
+
+## Exemplos
+
+O sistema vem com arquivos de exemplo na pasta `examples/`:
+
+- `example_model.json` - Um modelo de exemplo com vários tipos de campos
+- `example_data.json` - Dados de exemplo compatíveis com o modelo
+
+## Limitações Atuais
+
+- Suporte limitado para estruturas profundamente aninhadas
+- Não há suporte para validação de esquema via JSON Schema ou similar
+- Sem suporte nativo para referências entre objetos
+
+## Licença
+
+Este projeto é distribuído sob a licença MIT.
