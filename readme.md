@@ -1,4 +1,4 @@
-# JSON Database Editor
+# JSON Editor
 
 A JSON file management system with a graphical interface, developed in Python with Tkinter. It allows editing, validating, and maintaining structured JSON files according to a defined schema.
 

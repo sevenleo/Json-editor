@@ -1,6 +1,6 @@
-# JSON Database Editor Usage Guide
+# JSON Editor Usage Guide
 
-This guide provides detailed instructions on how to use the JSON Database Editor, a system that allows you to manage structured JSON files with schema validation.
+This guide provides detailed instructions on how to use the JSON Editor, a system that allows you to manage structured JSON files with schema validation.
 
 ## Table of Contents
 
@@ -17,7 +17,7 @@ This guide provides detailed instructions on how to use the JSON Database Editor
 
 ## Introduction
 
-The JSON Database Editor is a graphical application that allows you to edit, validate, and manage JSON files based on a predefined schema. The system works with two types of files:
+The JSON Editor is a graphical application that allows you to edit, validate, and manage JSON files based on a predefined schema. The system works with two types of files:
 
 1.  **Model File**: Contains the schema definition in the `__meta__` section, which specifies fields, data types, and requirements.
 2.  **Data File**: Contains the actual data, which must follow the structure defined in the model.
