@@ -51,6 +51,7 @@ backup/
 backups/
 *.json.bak
 .json_backups/
+*.spec
 
 # Arquivos específicos do sistema
 .DS_Store
