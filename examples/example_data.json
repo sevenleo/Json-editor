@@ -9,11 +9,9 @@
       "normal"
     ],
     "address": {
-      "street": "Avenida Teste",
-      "number": 456,
+      "street": "Avenida Teste, 456",
       "city": "Rio de Janeiro",
-      "zip": "20000-000",
-      "state": "RJ"
+      "zipcode": "20000-000"
     },
     "phone_numbers": [
       "(21) 99876-5432"
@@ -27,10 +25,9 @@
     "email": "pedro@exemplo.com",
     "active": false,
     "address": {
-      "street": "Alameda Inovação",
-      "number": 789,
+      "street": "Alameda Inovação, 789",
       "city": "Belo Horizonte",
-      "state": "MG"
+      "zipcode": ""
     },
     "department": "TI"
   },

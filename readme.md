@@ -1,74 +1,74 @@
 # JSON Database Editor
 
-Um sistema de gerenciamento de arquivos JSON com interface gráfica, desenvolvido em Python com Tkinter. Permite editar, validar e manter arquivos JSON estruturados de acordo com um esquema definido.
+A JSON file management system with a graphical interface, developed in Python with Tkinter. It allows editing, validating, and maintaining structured JSON files according to a defined schema.
 
-## Descrição
+## Description
 
-Este sistema foi projetado para funcionar como um editor visual de banco de dados JSON, permitindo:
+This system is designed to function as a visual JSON database editor, allowing you to:
 
-- Validar dados JSON contra um esquema definido em um arquivo modelo
-- Visualizar e editar dados de forma amigável com widgets apropriados para cada tipo de dado
-- Adicionar e remover registros seguindo o esquema definido
-- Buscar informações, navegar e manipular registros facilmente
-- Exportar e salvar os dados editados
+- Validate JSON data against a schema defined in a model file
+- View and edit data in a user-friendly way with appropriate widgets for each data type
+- Add and remove records following the defined schema
+- Easily search for information, navigate, and manipulate records
+- Export and save the edited data
 
-## Requisitos
+## Requirements
 
-- Python 3.6 ou superior
-- Tkinter (incluído na maioria das instalações padrão do Python)
-- Para suporte completo de arrastar e soltar no Windows, o módulo pywin32 é recomendado:
+- Python 3.6 or higher
+- Tkinter (included in most standard Python installations)
+- For full drag-and-drop support on Windows, the `pywin32` module is recommended:
   ```
   pip install pywin32
   ```
 
-## Instalação
+## Installation
 
-1. Clone este repositório ou baixe os arquivos
-2. Certifique-se de que Python 3.6+ está instalado
-3. (Opcional) Instale pywin32 para suporte completo de arrastar e soltar no Windows
+1. Clone this repository or download the files
+2. Ensure that Python 3.6+ is installed
+3. (Optional) Install `pywin32` for full drag-and-drop support on Windows
 
-## Como Usar
+## How to Use
 
-Execute o arquivo principal:
+Run the main file:
 
 ```
 python main.py
 ```
 
-### Fluxo básico de uso:
+### Basic workflow:
 
-1. Carregue um arquivo de modelo JSON (contendo a definição `__meta__`)
-2. Carregue um arquivo de dados JSON ou crie um novo conjunto de dados
-3. Edite, adicione ou remova registros conforme necessário
-4. Salve as alterações no arquivo original ou em um novo arquivo
+1. Load a JSON model file (containing the `__meta__` definition)
+2. Load a JSON data file or create a new dataset
+3. Edit, add, or remove records as needed
+4. Save the changes to the original file or a new file
 
-## Estrutura do Arquivo Modelo
+## Model File Structure
 
-O arquivo de modelo deve conter um objeto JSON com uma propriedade `__meta__` que define a estrutura esperada dos dados:
+The model file must contain a JSON object with a `__meta__` property that defines the expected data structure:
 
 ```json
 {
   "__meta__": {
-    "nome_do_campo": {
-      "type": "tipo_de_dado",
-      "required": true_ou_false
+    "field_name": {
+      "type": "data_type",
+      "required": true_or_false
     },
     ...
   }
 }
 ```
 
-### Tipos de dados suportados:
+### Supported data types:
 
 - `str` - Strings
-- `int` - Números inteiros
-- `float` - Números de ponto flutuante
-- `bool` - Valores booleanos (verdadeiro/falso)
-- `list` - Listas genéricas
-- `list[tipo]` - Listas tipadas (ex: `list[str]` para lista de strings)
-- `dict` ou `object` - Objetos/dicionários aninhados
+- `int` - Integers
+- `float` - Floating-point numbers
+- `bool` - Boolean values (true/false)
+- `list` - Generic lists
+- `list[type]` - Typed lists (e.g., `list[str]`). This also applies to `list[dict]`, allowing the creation of lists of objects with a defined structure.
+- `dict` or `object` - Nested dictionaries. If the model specifies the dictionary fields, the editing interface will display structured fields. Otherwise, a generic key-value pair interface will be used.
 
-### Exemplo:
+### Example:
 
 ```json
 {
@@ -78,50 +78,60 @@ O arquivo de modelo deve conter um objeto JSON com uma propriedade `__meta__` qu
     "age": { "type": "int", "required": false },
     "active": { "type": "bool", "required": true },
     "tags": { "type": "list[str]", "required": false },
-    "address": { "type": "dict", "required": false }
+    "address": {
+      "type": "dict",
+      "required": false,
+      "fields": {
+        "street": { "type": "str", "required": true },
+        "city": { "type": "str", "required": true },
+        "zipcode": { "type": "str", "required": false }
+      }
+    }
   }
 }
 ```
 
-## Funcionalidades
+## Features
 
-### Principais recursos:
+### Main features:
 
-- **Validação em tempo real**: Identifica campos obrigatórios ausentes e tipos de dados incorretos
-- **Interface tipo planilha**: Visualização em grade com edição de célula individualizada
-- **Edição apropriada por tipo**: Inputs de texto, checkboxes, campos numéricos, etc.
-- **Pesquisa**: Busca por conteúdo em qualquer campo
-- **Histórico de ações**: Suporte a operações de desfazer/refazer
-- **Tema claro/escuro**: Alterna entre temas para melhor conforto visual
-- **Arrastar e soltar**: Suporte para carregamento de arquivos via drag & drop
-- **Exportação**: Salva dados no formato JSON
+- **Real-time validation**: Identifies missing required fields and incorrect data types
+- **Spreadsheet-like interface**: Grid view with individual cell editing
+- **Type-appropriate editing**: Text inputs, checkboxes, numeric fields, etc.
+- **Search**: Searches for content in any field
+- **Action history**: Support for undo/redo operations
+- **Light/dark theme**: Toggles between themes for better visual comfort
+- **Drag and drop**: Support for loading files via drag & drop
+- **Export**: Saves data in JSON format
 
-### Atalhos de teclado:
+### Keyboard Shortcuts:
 
-- `Ctrl+O` - Carregar arquivo de modelo
-- `Ctrl+D` - Carregar arquivo de dados
-- `Ctrl+S` - Salvar dados
-- `Ctrl+N` - Adicionar nova entrada
-- `Delete` - Excluir entrada selecionada
-- `Ctrl+Z` - Desfazer
-- `Ctrl+Y` - Refazer
-- `Ctrl+F` - Focar no campo de pesquisa
-- `F3` - Próximo resultado de pesquisa
-- `Shift+F3` - Resultado anterior de pesquisa
+- `Ctrl+O` - Load model file
+- `Ctrl+D` - Load data file
+- `Ctrl+S` - Save data
+- `Ctrl+N` - Add new entry
+- `Delete` - Delete selected entry
+- `Ctrl+Z` - Undo
+- `Ctrl+Y` - Redo
+- `Ctrl+F` - Focus on search field
+- `F3` - Next search result
+- `Shift+F3` - Previous search result
 
-## Exemplos
+## Examples
 
-O sistema vem com arquivos de exemplo na pasta `examples/`:
+The system comes with example files in the `examples/` folder:
 
-- `example_model.json` - Um modelo de exemplo com vários tipos de campos
-- `example_data.json` - Dados de exemplo compatíveis com o modelo
+- `example_model.json` - An example model with various field types
+- `example_data.json` - Example data compatible with the model.
+- `complex_model.json` - A more complex model, demonstrating dictionaries and lists with nested structures.
+- `complex_data.json` - Corresponding data for the complex model.
 
-## Limitações Atuais
+## Current Limitations
 
-- Suporte limitado para estruturas profundamente aninhadas
-- Não há suporte para validação de esquema via JSON Schema ou similar
-- Sem suporte nativo para referências entre objetos
+- Limited support for deeply nested structures
+- No support for schema validation via JSON Schema or similar
+- No native support for cross-object references
 
-## Licença
+## License
 
-Este projeto é distribuído sob a licença MIT.
+This project is distributed under the MIT license.

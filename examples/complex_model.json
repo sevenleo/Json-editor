@@ -6,14 +6,55 @@
     "published": { "type": "bool", "required": true },
     "created_at": { "type": "str", "required": true },
     "updated_at": { "type": "str", "required": false },
-    "author": { "type": "dict", "required": true },
+    "author": {
+      "type": "dict",
+      "required": true,
+      "fields": {
+        "id": { "type": "int", "required": true },
+        "name": { "type": "str", "required": true },
+        "email": { "type": "str", "required": true },
+        "bio": { "type": "str", "required": false }
+      }
+    },
     "categories": { "type": "list[str]", "required": false },
     "tags": { "type": "list[str]", "required": false },
-    "stats": { "type": "dict", "required": false },
-    "comments": { "type": "list", "required": false },
+    "stats": {
+      "type": "dict",
+      "required": false,
+      "fields": {
+        "views": { "type": "int", "required": false },
+        "likes": { "type": "int", "required": false },
+        "shares": { "type": "int", "required": false },
+        "enrollments": { "type": "int", "required": false },
+        "registrations": { "type": "int", "required": false }
+      }
+    },
+    "comments": {
+      "type": "list[dict]",
+      "required": false,
+      "fields": {
+        "id": { "type": "int", "required": true },
+        "user": { "type": "str", "required": true },
+        "text": { "type": "str", "required": true },
+        "date": { "type": "str", "required": false }
+      }
+    },
     "related_items": { "type": "list[int]", "required": false },
     "price": { "type": "float", "required": false },
     "discount": { "type": "float", "required": false },
-    "metadata": { "type": "dict", "required": false }
+    "metadata": {
+      "type": "dict",
+      "required": false,
+      "fields": {
+        "reading_time": { "type": "int", "required": false },
+        "difficulty": { "type": "str", "required": false },
+        "keywords": { "type": "list[str]", "required": false },
+        "duration": { "type": "str", "required": false },
+        "modules": { "type": "int", "required": false },
+        "includes_certificate": { "type": "bool", "required": false },
+        "pages": { "type": "int", "required": false },
+        "format": { "type": "str", "required": false }
+      }
+    }
   }
 }

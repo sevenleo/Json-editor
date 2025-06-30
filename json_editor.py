@@ -342,28 +342,165 @@ class EditDialog(tk.Toplevel):
             # Lista para armazenar pares de widgets de entrada (chave, valor)
             widget.entries = []
             widget.parent_frame = dict_frame
+            widget.field_specs = {}  # Para armazenar especificações de subcampos
             
-            # Botões para adicionar/remover pares
-            btn_frame = ttk.Frame(dict_frame)
-            btn_frame.pack(fill="x", side="bottom", pady=5)
+            # Verificar se há campos definidos no modelo
+            has_defined_fields = False
+            defined_fields = {}
             
-            ttk.Button(btn_frame, text="Adicionar Par",
-                      command=lambda: self.add_dict_pair(widget)).pack(side="left", padx=5)
-            ttk.Button(btn_frame, text="Remover Último",
-                      command=lambda: self.remove_dict_pair(widget)).pack(side="left")
+            if self.field_type == "dict" or self.field_type == "object":
+                if hasattr(self.parent, 'json_model') and self.parent.json_model:
+                    defined_fields = self.parent.json_model.get_dict_fields(self.field_name)
+                    has_defined_fields = bool(defined_fields)
+                    widget.field_specs = defined_fields
             
-            # Adicionar pares do dicionário atual
-            if self.current_value and isinstance(self.current_value, dict):
-                for key, value in self.current_value.items():
-                    self.add_dict_pair(widget, key, value)
-            
-            # Se o dicionário estiver vazio, adicionar um par em branco
-            if not widget.entries:
-                self.add_dict_pair(widget)
+            # Se houver campos definidos, usar layout estruturado
+            if has_defined_fields:
+                # Criar rótulos de cabeçalho
+                header_frame = ttk.Frame(dict_frame)
+                header_frame.pack(fill="x", pady=(0, 5))
+                
+                ttk.Label(header_frame, text="Campo", width=15).pack(side="left", padx=(0, 5))
+                ttk.Label(header_frame, text="Tipo").pack(side="left", padx=5)
+                ttk.Label(header_frame, text="Valor").pack(side="left", padx=5, fill="x", expand=True)
+                
+                # Adicionar campos definidos no modelo
+                for subfield_name, subfield_spec in defined_fields.items():
+                    field_frame = ttk.Frame(dict_frame)
+                    field_frame.pack(fill="x", pady=2)
+                    
+                    # Informações do campo
+                    is_required = subfield_spec.get("required", False)
+                    subfield_type = subfield_spec["type"]
+                    current_subvalue = self.current_value.get(subfield_name) if self.current_value else None
+                    
+                    # Rótulo do campo (com indicador de obrigatoriedade)
+                    ttk.Label(
+                        field_frame,
+                        text=f"{subfield_name}{' *' if is_required else ''}",
+                        width=15
+                    ).pack(side="left", padx=(0, 5))
+                    
+                    # Rótulo do tipo
+                    ttk.Label(
+                        field_frame,
+                        text=subfield_type,
+                        width=10
+                    ).pack(side="left", padx=5)
+                    
+                    # Widget de entrada apropriado para o tipo
+                    value_entry = self.create_type_specific_widget(
+                        field_frame, subfield_type, current_subvalue
+                    )
+                    value_entry.pack(side="left", fill="x", expand=True, padx=5)
+                    
+                    # Armazenar referência com nome do campo
+                    widget.entries.append((subfield_name, value_entry, is_required, subfield_type))
+            else:
+                # Usar interface genérica de pares chave-valor
+                # Botões para adicionar/remover pares
+                btn_frame = ttk.Frame(dict_frame)
+                btn_frame.pack(fill="x", side="bottom", pady=5)
+                
+                ttk.Button(btn_frame, text="Adicionar Par",
+                          command=lambda: self.add_dict_pair(widget)).pack(side="left", padx=5)
+                ttk.Button(btn_frame, text="Remover Último",
+                          command=lambda: self.remove_dict_pair(widget)).pack(side="left")
+                
+                # Adicionar pares do dicionário atual
+                if self.current_value and isinstance(self.current_value, dict):
+                    for key, value in self.current_value.items():
+                        self.add_dict_pair(widget, key, value)
+                
+                # Se o dicionário estiver vazio, adicionar um par em branco
+                if not widget.entries:
+                    self.add_dict_pair(widget)
         
         if widget:
             widget.pack(fill="both", expand=True, pady=5)
         
+        return widget
+        
+    def create_type_specific_widget(self, parent, field_type, current_value=None):
+        """Cria um widget específico para o tipo de campo informado dentro de um dicionário."""
+        widget = None
+        
+        if field_type == "str":
+            widget = ttk.Entry(parent)
+            if current_value is not None:
+                widget.insert(0, str(current_value))
+                
+        elif field_type == "int":
+            vcmd = (self.register(self.validate_int), '%P')
+            widget = ttk.Entry(parent, validate="key", validatecommand=vcmd)
+            if current_value is not None:
+                widget.insert(0, str(current_value))
+            else:
+                widget.insert(0, "0")
+                
+        elif field_type == "float":
+            vcmd = (self.register(self.validate_float), '%P')
+            widget = ttk.Entry(parent, validate="key", validatecommand=vcmd)
+            if current_value is not None:
+                widget.insert(0, str(current_value))
+            else:
+                widget.insert(0, "0.0")
+                
+        elif field_type == "bool":
+            var = tk.BooleanVar(value=bool(current_value) if current_value is not None else False)
+            widget = ttk.Checkbutton(parent, variable=var)
+            widget.var = var  # Armazenar referência à variável
+            
+        elif field_type == "list" or field_type.startswith("list["):
+            # Para listas dentro de dicionários, usamos um botão que abre outro diálogo
+            button_frame = ttk.Frame(parent)
+            
+            # Exibir valor resumido
+            list_preview = "[]"
+            if current_value and isinstance(current_value, list):
+                list_preview = f"[{len(current_value)} itens]"
+                
+            preview_label = ttk.Label(button_frame, text=list_preview)
+            preview_label.pack(side="left", fill="x", expand=True)
+            
+            edit_button = ttk.Button(
+                button_frame,
+                text="Editar Lista",
+                command=lambda: self.open_list_dialog(field_type, current_value, preview_label)
+            )
+            edit_button.pack(side="right")
+            
+            widget = button_frame
+            widget.list_value = current_value if current_value else []
+            
+        elif field_type == "dict" or field_type == "object":
+            # Para dicionários dentro de dicionários, usamos um botão que abre outro diálogo
+            button_frame = ttk.Frame(parent)
+            
+            # Exibir valor resumido
+            dict_preview = "{}"
+            if current_value and isinstance(current_value, dict):
+                dict_preview = f"{{{len(current_value)} pares}}"
+                
+            preview_label = ttk.Label(button_frame, text=dict_preview)
+            preview_label.pack(side="left", fill="x", expand=True)
+            
+            edit_button = ttk.Button(
+                button_frame,
+                text="Editar Dict",
+                command=lambda: self.open_dict_dialog(field_type, current_value, preview_label)
+            )
+            edit_button.pack(side="right")
+            
+            widget = button_frame
+            widget.dict_value = current_value if current_value else {}
+            
+        else:
+            # Para tipos desconhecidos, usar uma entrada de texto simples
+            widget = ttk.Entry(parent)
+            if current_value is not None:
+                widget.insert(0, str(current_value))
+                
         return widget
     
     def validate_int(self, value):
@@ -446,36 +583,73 @@ class EditDialog(tk.Toplevel):
                 self.result = list_values
                 
             elif self.field_type == "dict" or self.field_type == "object":
-                # Coletar pares chave-valor dos campos de entrada
-                dict_values = {}
-                
-                for key_widget, value_widget in self.value_widget.entries:
-                    key = key_widget.get().strip()
-                    value = value_widget.get().strip()
+                # Verificar se este é um dicionário com campos definidos
+                if hasattr(self.value_widget, 'field_specs') and self.value_widget.field_specs:
+                    # Coletar valores dos campos definidos
+                    dict_values = {}
                     
-                    if key:  # Ignorar chaves vazias
-                        # Tentar detectar o tipo do valor automaticamente
-                        if not value:
-                            # Valor vazio, manter como string
-                            dict_values[key] = value
-                        elif value.lower() in ("true", "verdadeiro", "1", "sim", "s", "t"):
-                            dict_values[key] = True
-                        elif value.lower() in ("false", "falso", "0", "não", "nao", "n", "f"):
-                            dict_values[key] = False
+                    for field_name, widget, is_required, field_type in self.value_widget.entries:
+                        # Obter valor do widget
+                        if field_type == "bool":
+                            if hasattr(widget, 'var'):
+                                value = widget.var.get()
+                            else:
+                                value = False
+                        elif field_type == "list" or field_type.startswith("list["):
+                            value = getattr(widget, 'list_value', [])
+                        elif field_type == "dict" or field_type == "object":
+                            value = getattr(widget, 'dict_value', {})
                         else:
-                            # Tentar converter para número
-                            try:
-                                if "." in value or "," in value:
-                                    # Substituir vírgula por ponto para float
-                                    value = value.replace(",", ".")
-                                    dict_values[key] = float(value)
-                                else:
-                                    dict_values[key] = int(value)
-                            except ValueError:
-                                # Se não for número, manter como string
+                            value = widget.get().strip()
+                            
+                            # Converter para o tipo correto
+                            if field_type == "int" and value:
+                                try:
+                                    value = int(value)
+                                except ValueError:
+                                    raise ValueError(f"O valor para '{field_name}' não é um número inteiro válido")
+                            elif field_type == "float" and value:
+                                try:
+                                    value = float(value)
+                                except ValueError:
+                                    raise ValueError(f"O valor para '{field_name}' não é um número válido")
+                            elif not value and is_required:
+                                raise ValueError(f"O campo '{field_name}' é obrigatório")
+                        
+                        dict_values[field_name] = value
+                                
+                    self.result = dict_values
+                else:
+                    # Usar a lógica original para dicionários genéricos
+                    dict_values = {}
+                    
+                    for key_widget, value_widget in self.value_widget.entries:
+                        key = key_widget.get().strip()
+                        value = value_widget.get().strip()
+                        
+                        if key:  # Ignorar chaves vazias
+                            # Tentar detectar o tipo do valor automaticamente
+                            if not value:
+                                # Valor vazio, manter como string
                                 dict_values[key] = value
-                
-                self.result = dict_values
+                            elif value.lower() in ("true", "verdadeiro", "1", "sim", "s", "t"):
+                                dict_values[key] = True
+                            elif value.lower() in ("false", "falso", "0", "não", "nao", "n", "f"):
+                                dict_values[key] = False
+                            else:
+                                # Tentar converter para número
+                                try:
+                                    if "." in value or "," in value:
+                                        # Substituir vírgula por ponto para float
+                                        value = value.replace(",", ".")
+                                        dict_values[key] = float(value)
+                                    else:
+                                        dict_values[key] = int(value)
+                                except ValueError:
+                                    # Se não for número, manter como string
+                                    dict_values[key] = value
+                    
+                    self.result = dict_values
                 
             self.destroy()
             
@@ -548,6 +722,54 @@ class EditDialog(tk.Toplevel):
             # Remover o último par de widgets
             pair = widget.entries.pop()
             pair[0].master.destroy()  # Destruir o frame pai
+            
+    def open_list_dialog(self, field_type, current_value, preview_label):
+        """Abre um diálogo para editar uma lista dentro de um dicionário."""
+        # Criar um diálogo para editar a lista
+        dialog = EditDialog(
+            self,
+            "Lista",
+            field_type,
+            current_value,
+            False,
+            self.theme
+        )
+        
+        # Esperar pelo fechamento do diálogo
+        self.wait_window(dialog)
+        
+        # Processar resultado
+        if dialog.result is not None:
+            # Atualizar o valor da lista no widget
+            self.value_widget.list_value = dialog.result
+            
+            # Atualizar a visualização
+            preview_text = f"[{len(dialog.result)} itens]"
+            preview_label.configure(text=preview_text)
+    
+    def open_dict_dialog(self, field_type, current_value, preview_label):
+        """Abre um diálogo para editar um dicionário dentro de um dicionário."""
+        # Criar um diálogo para editar o dicionário
+        dialog = EditDialog(
+            self,
+            "Dicionário",
+            field_type,
+            current_value,
+            False,
+            self.theme
+        )
+        
+        # Esperar pelo fechamento do diálogo
+        self.wait_window(dialog)
+        
+        # Processar resultado
+        if dialog.result is not None:
+            # Atualizar o valor do dicionário no widget
+            self.value_widget.dict_value = dialog.result
+            
+            # Atualizar a visualização
+            preview_text = f"{{{len(dialog.result)} pares}}"
+            preview_label.configure(text=preview_text)
 
 class JsonEditorApp:
     """Aplicação principal para edição de arquivos JSON."""

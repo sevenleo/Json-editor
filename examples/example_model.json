@@ -5,7 +5,15 @@
     "age": { "type": "int", "required": false },
     "active": { "type": "bool", "required": true },
     "tags": { "type": "list[str]", "required": false },
-    "address": { "type": "dict", "required": false },
+    "address": {
+      "type": "dict",
+      "required": false,
+      "fields": {
+        "street": { "type": "str", "required": true },
+        "city": { "type": "str", "required": true },
+        "zipcode": { "type": "str", "required": false }
+      }
+    },
     "phone_numbers": { "type": "list", "required": false },
     "salary": { "type": "float", "required": false },
     "hire_date": { "type": "str", "required": false },

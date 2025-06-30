@@ -109,6 +109,28 @@ class JsonModel:
             # Verificar required (opcional, padrão False)
             if "required" in field_spec and not isinstance(field_spec["required"], bool):
                 raise JsonModelError(f"Valor 'required' inválido para o campo '{field_name}'")
+                
+            # Validar campos internos para dicionários
+            if (field_type == "dict" or field_type == "object") and "fields" in field_spec:
+                if not isinstance(field_spec["fields"], dict):
+                    raise JsonModelError(f"Especificação 'fields' inválida para o campo '{field_name}'")
+                
+                # Validar cada subcampo
+                for subfield_name, subfield_spec in field_spec["fields"].items():
+                    if not isinstance(subfield_spec, dict):
+                        raise JsonModelError(f"Especificação inválida para o subcampo '{field_name}.{subfield_name}'")
+                    
+                    if "type" not in subfield_spec:
+                        raise JsonModelError(f"Tipo não especificado para o subcampo '{field_name}.{subfield_name}'")
+                    
+                    subfield_type = subfield_spec["type"]
+                    sub_base_type = subfield_type.split('[')[0] if '[' in subfield_type else subfield_type
+                    
+                    if sub_base_type not in self.SUPPORTED_TYPES:
+                        raise JsonModelError(f"Tipo não suportado '{subfield_type}' para o subcampo '{field_name}.{subfield_name}'")
+                    
+                    if "required" in subfield_spec and not isinstance(subfield_spec["required"], bool):
+                        raise JsonModelError(f"Valor 'required' inválido para o subcampo '{field_name}.{subfield_name}'")
     
     def validate_entry(self, entry: Dict) -> List[str]:
         """
@@ -141,6 +163,47 @@ class JsonModel:
                     if not isinstance(field_value, expected_type):
                         errors.append(f"Campo '{field_name}' deve ser do tipo {field_type}, "
                                      f"recebido {type(field_value).__name__}")
+                    
+                    # Validar subcampos para dicionários com definição de campos
+                    if (field_type == "dict" or field_type == "object") and "fields" in field_spec and isinstance(field_value, dict):
+                        # Validar subcampos obrigatórios
+                        for subfield_name, subfield_spec in field_spec["fields"].items():
+                            sub_required = subfield_spec.get("required", False)
+                            
+                            if sub_required and (subfield_name not in field_value or field_value[subfield_name] is None):
+                                errors.append(f"Subcampo obrigatório '{field_name}.{subfield_name}' está ausente")
+                                continue
+                            
+                            # Se o subcampo estiver presente, validar o tipo
+                            if subfield_name in field_value and field_value[subfield_name] is not None:
+                                subfield_type = subfield_spec["type"]
+                                subfield_value = field_value[subfield_name]
+                                
+                                # Validar tipo do subcampo
+                                if subfield_type in self.SUPPORTED_TYPES:
+                                    expected_subtype = self.SUPPORTED_TYPES[subfield_type]
+                                    if not isinstance(subfield_value, expected_subtype):
+                                        errors.append(f"Subcampo '{field_name}.{subfield_name}' deve ser do tipo {subfield_type}, "
+                                                    f"recebido {type(subfield_value).__name__}")
+                                
+                                # Validar listas tipadas em subcampos
+                                elif subfield_type.startswith("list[") and subfield_type.endswith("]"):
+                                    if not isinstance(subfield_value, list):
+                                        errors.append(f"Subcampo '{field_name}.{subfield_name}' deve ser uma lista")
+                                    else:
+                                        inner_type = subfield_type[5:-1]  # Extrair tipo interno da lista
+                                        if inner_type in self.SUPPORTED_TYPES:
+                                            expected_inner_type = self.SUPPORTED_TYPES[inner_type]
+                                            for i, item in enumerate(subfield_value):
+                                                if not isinstance(item, expected_inner_type):
+                                                    errors.append(
+                                                        f"Item {i} em '{field_name}.{subfield_name}' deve ser do tipo {inner_type}, "
+                                                        f"recebido {type(item).__name__}")
+                        
+                        # Verificar subcampos extras não definidos no modelo
+                        for subfield_name in field_value:
+                            if "fields" in field_spec and subfield_name not in field_spec["fields"]:
+                                errors.append(f"Subcampo '{field_name}.{subfield_name}' não está definido no modelo")
                 
                 # Validar listas tipadas (por exemplo, "list[str]")
                 elif field_type.startswith("list[") and field_type.endswith("]"):
@@ -208,7 +271,33 @@ class JsonModel:
                 elif field_type == "list" or field_type.startswith("list["):
                     entry[field_name] = []
                 elif field_type == "dict" or field_type == "object":
-                    entry[field_name] = {}
+                    # Para dicionários com campos definidos, criar estrutura interna
+                    if "fields" in field_spec:
+                        sub_entry = {}
+                        for subfield_name, subfield_spec in field_spec["fields"].items():
+                            sub_required = subfield_spec.get("required", False)
+                            subfield_type = subfield_spec["type"]
+                            
+                            if sub_required:
+                                if subfield_type == "str":
+                                    sub_entry[subfield_name] = ""
+                                elif subfield_type == "int":
+                                    sub_entry[subfield_name] = 0
+                                elif subfield_type == "float":
+                                    sub_entry[subfield_name] = 0.0
+                                elif subfield_type == "bool":
+                                    sub_entry[subfield_name] = False
+                                elif subfield_type == "list" or subfield_type.startswith("list["):
+                                    sub_entry[subfield_name] = []
+                                elif subfield_type == "dict" or subfield_type == "object":
+                                    sub_entry[subfield_name] = {}
+                            else:
+                                # Subcampos opcionais ficam como None
+                                sub_entry[subfield_name] = None
+                        
+                        entry[field_name] = sub_entry
+                    else:
+                        entry[field_name] = {}
             else:
                 # Campos opcionais ficam como None
                 entry[field_name] = None
@@ -251,3 +340,28 @@ class JsonModel:
         if field_name in self.meta:
             return self.meta[field_name].get("required", False)
         return False
+        
+    def get_dict_fields(self, field_name) -> Dict:
+        """
+        Retorna a especificação dos subcampos de um dicionário.
+        
+        Args:
+            field_name: Nome do campo dicionário ou índice na lista de campos.
+            
+        Returns:
+            Dicionário com as especificações dos subcampos ou vazio se não houver.
+        """
+        # Se for um índice, converter para nome do campo
+        if isinstance(field_name, int):
+            fields = self.get_field_names()
+            if 0 <= field_name < len(fields):
+                field_name = fields[field_name]
+            else:
+                return {}
+        
+        # Verificar se o campo existe e é um dicionário com campos definidos
+        if field_name in self.meta:
+            field_spec = self.meta[field_name]
+            if (field_spec["type"] == "dict" or field_spec["type"] == "object") and "fields" in field_spec:
+                return field_spec["fields"]
+        return {}

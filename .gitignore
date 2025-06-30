@@ -1,0 +1,66 @@
+# Arquivos de byte-code Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribuição e empacotamento
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Ambientes virtuais
+venv/
+env/
+ENV/
+.env
+
+# Arquivos de IDE e editores
+.idea/
+.vscode/
+*.swp
+*.swo
+.project
+.pydevproject
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# Arquivos de log
+*.log
+logs/
+log/
+
+# Arquivos temporários
+temp/
+tmp/
+.temp/
+.tmp/
+
+# Arquivos de backup
+*.bak
+*~
+.backup/
+backup/
+
+# Arquivos específicos do sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Arquivos de configuração locais
+config.local.py
+
+# Arquivos JSON temporários ou de backup
+*.json.bak
+.json_backups/
+
+# Arquivos específicos do aplicativo
+*.tkinter_cache
+
+updates.txt
+prompt.txt
+backups/
+*.bak
+*.pyc
+__pycache__/

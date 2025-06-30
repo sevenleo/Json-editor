@@ -1,276 +1,275 @@
-# Guia de Uso do Editor de Banco de Dados JSON
+# JSON Database Editor Usage Guide
 
-Este guia fornece instruções detalhadas sobre como utilizar o Editor de Banco de Dados JSON, um sistema que permite gerenciar arquivos JSON estruturados com validação de esquema.
+This guide provides detailed instructions on how to use the JSON Database Editor, a system that allows you to manage structured JSON files with schema validation.
 
-## Sumário
+## Table of Contents
 
-1. [Introdução](#introdução)
-2. [Conceitos Básicos](#conceitos-básicos)
-3. [Primeiros Passos](#primeiros-passos)
-4. [Interface de Usuário](#interface-de-usuário)
-5. [Operações com Arquivos](#operações-com-arquivos)
-6. [Edição de Dados](#edição-de-dados)
-7. [Busca e Navegação](#busca-e-navegação)
-8. [Configurações](#configurações)
-9. [Recursos Avançados](#recursos-avançados)
-10. [Solução de Problemas](#solução-de-problemas)
+1. [Introduction](#introduction)
+2. [Basic Concepts](#basic-concepts)
+3. [Getting Started](#getting-started)
+4. [User Interface](#user-interface)
+5. [File Operations](#file-operations)
+6. [Data Editing](#data-editing)
+7. [Search and Navigation](#search-and-navigation)
+8. [Settings](#settings)
+9. [Advanced Features](#advanced-features)
+10. [Troubleshooting](#troubleshooting)
 
-## Introdução
+## Introduction
 
-O Editor de Banco de Dados JSON é uma aplicação gráfica que permite editar, validar e gerenciar arquivos JSON com base em um esquema predefinido. O sistema trabalha com dois tipos de arquivos:
+The JSON Database Editor is a graphical application that allows you to edit, validate, and manage JSON files based on a predefined schema. The system works with two types of files:
 
-1. **Arquivo de Modelo**: Contém a definição do esquema na seção `__meta__`, que especifica os campos, tipos de dados e requisitos.
-2. **Arquivo de Dados**: Contém os dados propriamente ditos, que devem seguir a estrutura definida no modelo.
+1.  **Model File**: Contains the schema definition in the `__meta__` section, which specifies fields, data types, and requirements.
+2.  **Data File**: Contains the actual data, which must follow the structure defined in the model.
 
-## Conceitos Básicos
+## Basic Concepts
 
-### Modelo de Dados (`__meta__`)
+### Data Model (`__meta__`)
 
-O modelo define a estrutura esperada dos dados através de um objeto `__meta__` com o seguinte formato:
+The model defines the expected data structure through a `__meta__` object with the following format:
 
 ```json
 {
   "__meta__": {
-    "nome_do_campo": {
-      "type": "tipo_de_dado",
-      "required": true_ou_false
+    "field_name": {
+      "type": "data_type",
+      "required": true_or_false
     },
     ...
   }
 }
 ```
 
-### Tipos de Dados Suportados
+### Supported Data Types
 
-- `str`: Strings (textos)
-- `int`: Números inteiros
-- `float`: Números de ponto flutuante (decimais)
-- `bool`: Valores booleanos (verdadeiro/falso)
-- `list`: Listas genéricas
-- `list[tipo]`: Listas tipadas (ex: `list[str]` para lista de strings)
-- `dict` ou `object`: Objetos/dicionários aninhados
+- `str`: Strings
+- `int`: Integers
+- `float`: Floating-point numbers
+- `bool`: Boolean values (true/false)
+- `list`: Generic lists
+- `list[type]`: Typed lists (e.g., `list[str]` for a list of strings)
+- `dict` or `object`: Nested dictionaries. If the model specifies the dictionary fields, the editing interface will display structured fields. Otherwise, a generic key-value pair interface will be used.
 
-### Arquivo de Dados
+### Data File
 
-Os dados são armazenados como uma lista de objetos JSON que seguem a estrutura definida no modelo:
+The data is stored as a list of JSON objects that follow the structure defined in the model:
 
 ```json
 [
   {
-    "nome": "João Silva",
-    "email": "joao@exemplo.com",
-    "idade": 30,
-    "ativo": true
+    "name": "John Silva",
+    "email": "john@example.com",
+    "age": 30,
+    "active": true
   },
   {
-    "nome": "Maria Oliveira",
-    "email": "maria@exemplo.com",
-    "idade": 25,
-    "ativo": false
+    "name": "Maria Oliveira",
+    "email": "maria@example.com",
+    "age": 25,
+    "active": false
   }
 ]
 ```
 
-## Primeiros Passos
+## Getting Started
 
-### Iniciar a Aplicação
+### Starting the Application
 
-1. Execute o arquivo `main.py`:
-   ```
-   python main.py
-   ```
+1.  Run the `main.py` file:
+    ```
+    python main.py
+    ```
+2.  The application will load and display the main window.
 
-2. A aplicação irá carregar e exibir a janela principal.
+### Loading a Model
 
-### Carregar um Modelo
+1.  Click the "Load Model" button on the toolbar or use the File > Load Model menu (or press `Ctrl+O`).
+2.  Select the JSON file containing the `__meta__` definition.
+3.  The system will parse the model and configure the interface accordingly.
 
-1. Clique no botão "Carregar Modelo" na barra de ferramentas ou use o menu Arquivo > Carregar Modelo (ou pressione Ctrl+O).
-2. Selecione o arquivo JSON contendo a definição `__meta__`.
-3. O sistema irá analisar o modelo e configurar a interface apropriadamente.
+### Loading Data
 
-### Carregar Dados
+1.  Click the "Load Data" button on the toolbar or use the File > Load Data menu (or press `Ctrl+D`).
+2.  Select the JSON file containing the data.
+3.  The data will be loaded and validated against the current model.
 
-1. Clique no botão "Carregar Dados" na barra de ferramentas ou use o menu Arquivo > Carregar Dados (ou pressione Ctrl+D).
-2. Selecione o arquivo JSON contendo os dados.
-3. Os dados serão carregados e validados contra o modelo atual.
+## User Interface
 
-## Interface de Usuário
+### Main Components
 
-### Componentes Principais
+-   **Toolbar**: Contains buttons for the most common operations.
+-   **Search Panel**: Allows you to search for information in the data.
+-   **Table View**: Displays the data in a tabular format.
+-   **Status Bar**: Shows information about the loaded files.
 
-- **Barra de Ferramentas**: Contém botões para as operações mais comuns.
-- **Painel de Pesquisa**: Permite buscar informações nos dados.
-- **Visualização em Tabela**: Exibe os dados em formato tabular.
-- **Barra de Status**: Mostra informações sobre os arquivos carregados.
+### Keyboard Shortcuts
 
-### Atalhos de Teclado
+- `Ctrl+O`: Load model file
+- `Ctrl+D`: Load data file
+- `Ctrl+S`: Save data
+- `Ctrl+N`: Add new entry
+- `Delete`: Delete selected entry
+- `Ctrl+Z`: Undo
+- `Ctrl+Y`: Redo
+- `Ctrl+F`: Focus on search field
+- `F3`: Next search result
+- `Shift+F3`: Previous search result
 
-- `Ctrl+O`: Carregar arquivo de modelo
-- `Ctrl+D`: Carregar arquivo de dados
-- `Ctrl+S`: Salvar dados
-- `Ctrl+N`: Adicionar nova entrada
-- `Delete`: Excluir entrada selecionada
-- `Ctrl+Z`: Desfazer
-- `Ctrl+Y`: Refazer
-- `Ctrl+F`: Focar no campo de pesquisa
-- `F3`: Próximo resultado de pesquisa
-- `Shift+F3`: Resultado anterior de pesquisa
+## File Operations
 
-## Operações com Arquivos
+### Loading an Existing Model
 
-### Carregar um Modelo Existente
+1.  Use the "Load Model" button or the File > Load Model menu.
+2.  Navigate to the desired JSON model file.
+3.  Select the file and click "Open".
 
-1. Use o botão "Carregar Modelo" ou o menu Arquivo > Carregar Modelo.
-2. Navegue até o arquivo JSON de modelo desejado.
-3. Selecione o arquivo e clique em "Abrir".
+### Loading Existing Data
 
-### Carregar Dados Existentes
+1.  Use the "Load Data" button or the File > Load Data menu.
+2.  Navigate to the desired JSON data file.
+3.  Select the file and click "Open".
 
-1. Use o botão "Carregar Dados" ou o menu Arquivo > Carregar Dados.
-2. Navegue até o arquivo JSON de dados desejado.
-3. Selecione o arquivo e clique em "Abrir".
+### Saving Data
 
-### Salvar Dados
+1.  Use the "Save Data" button or the File > Save menu (or press `Ctrl+S`).
+2.  If the file has not been saved before, you will be prompted for a location to save it.
+3.  The data will be validated and saved in JSON format.
 
-1. Use o botão "Salvar Dados" ou o menu Arquivo > Salvar (ou pressione Ctrl+S).
-2. Se o arquivo não tiver sido salvo anteriormente, será solicitado um local para salvá-lo.
-3. Os dados serão validados e salvos no formato JSON.
+### Saving Data as a New File
 
-### Salvar Dados como Novo Arquivo
+1.  Use the File > Save As menu.
+2.  Navigate to the desired location and provide a name for the file.
+3.  Click "Save".
 
-1. Use o menu Arquivo > Salvar Como.
-2. Navegue até o local desejado e forneça um nome para o arquivo.
-3. Clique em "Salvar".
+### Exporting to CSV
 
-### Exportar para CSV
+1.  Use the Tools > Export to CSV menu.
+2.  Select the location and name for the CSV file.
+3.  The data will be converted and saved in CSV format.
 
-1. Use o menu Ferramentas > Exportar para CSV.
-2. Selecione o local e nome do arquivo CSV.
-3. Os dados serão convertidos e salvos no formato CSV.
+### Importing from CSV
 
-### Importar de CSV
+1.  Use the Tools > Import from CSV menu.
+2.  Select the CSV file to import.
+3.  The data will be converted to JSON and validated against the current model.
 
-1. Use o menu Ferramentas > Importar de CSV.
-2. Selecione o arquivo CSV a ser importado.
-3. Os dados serão convertidos para JSON e validados contra o modelo atual.
+## Data Editing
 
-## Edição de Dados
+### Adding a New Entry
 
-### Adicionar Nova Entrada
+1.  Click the "Add" button or use the Edit > Add Entry menu (or press `Ctrl+N`).
+2.  A new entry will be created with default values for required fields.
+3.  An editing dialog will open for each field, allowing you to fill in the values.
 
-1. Clique no botão "Adicionar" ou use o menu Editar > Adicionar Entrada (ou pressione Ctrl+N).
-2. Uma nova entrada será criada com valores padrão para campos obrigatórios.
-3. Um diálogo de edição será aberto para cada campo, permitindo que você preencha os valores.
+### Editing an Existing Entry
 
-### Editar Entrada Existente
+1.  Select the entry you want to edit in the table.
+2.  Click the "Edit" button, use the Edit > Edit Selected menu, or double-click the entry.
+3.  An editing dialog will open for each field, allowing you to change the values.
 
-1. Selecione a entrada que deseja editar na tabela.
-2. Clique no botão "Editar", use o menu Editar > Editar Selecionada, ou dê um duplo clique na entrada.
-3. Um diálogo de edição será aberto para cada campo, permitindo que você altere os valores.
+### Deleting an Entry
 
-### Excluir Entrada
+1.  Select the entry you want to delete in the table.
+2.  Click the "Delete" button, use the Edit > Delete Selected menu, or press the `Delete` key.
+3.  Confirm the deletion when prompted.
 
-1. Selecione a entrada que deseja excluir na tabela.
-2. Clique no botão "Excluir", use o menu Editar > Excluir Selecionada, ou pressione a tecla Delete.
-3. Confirme a exclusão quando solicitado.
+### Undo/Redo
 
-### Desfazer/Refazer
+-   To undo the last operation, use the "Undo" button, the Edit > Undo menu, or press `Ctrl+Z`.
+-   To redo an undone operation, use the "Redo" button, the Edit > Redo menu, or press `Ctrl+Y`.
 
-- Para desfazer a última operação, use o botão "Desfazer", o menu Editar > Desfazer, ou pressione Ctrl+Z.
-- Para refazer uma operação desfeita, use o botão "Refazer", o menu Editar > Refazer, ou pressione Ctrl+Y.
+## Search and Navigation
 
-## Busca e Navegação
+### Searching the Data
 
-### Pesquisar nos Dados
+1.  Type the search term in the search field at the top of the window.
+2.  Press `Enter` or click the "Search" button.
+3.  The first result will be selected automatically.
 
-1. Digite o termo de busca no campo de pesquisa na parte superior da janela.
-2. Pressione Enter ou clique no botão "Buscar".
-3. O primeiro resultado será selecionado automaticamente.
+### Navigating Between Results
 
-### Navegar entre Resultados
+-   To go to the next result, click the "Next" button or press `F3`.
+-   To go to the previous result, click the "Previous" button or press `Shift+F3`.
 
-- Para ir para o próximo resultado, clique no botão "Próximo" ou pressione F3.
-- Para ir para o resultado anterior, clique no botão "Anterior" ou pressione Shift+F3.
+## Settings
 
-## Configurações
+### Accessing Preferences
 
-### Acessar Preferências
+1.  Use the Settings > Preferences menu.
+2.  A settings dialog will open with several tabs for different categories.
 
-1. Use o menu Configurações > Preferências.
-2. Um diálogo de configurações será aberto com várias abas para diferentes categorias.
+### Toggling the Theme
 
-### Alternar Tema
+1.  Click the "Dark/Light Theme" button on the toolbar or use the View > Toggle Theme menu.
+2.  The interface will be updated with the new theme.
 
-1. Clique no botão "Tema Escuro/Claro" na barra de ferramentas ou use o menu Visualizar > Alternar Tema.
-2. A interface será atualizada com o novo tema.
+### Customizing Behavior
 
-### Personalizar Comportamento
+The settings dialog allows you to customize various aspects of the system:
 
-O diálogo de configurações permite personalizar vários aspectos do sistema:
+-   **Interface**: Window size, font, drag-and-drop behavior, etc.
+-   **Files**: Backup creation, auto-save, encoding, etc.
+-   **Validation**: When to validate, strict type checking, etc.
+-   **Export**: Export formats, CSV delimiters, etc.
+-   **Directories**: Custom locations for different file types.
 
-- **Interface**: Tamanho da janela, fonte, comportamento de arrastar e soltar, etc.
-- **Arquivos**: Criação de backups, salvamento automático, codificação, etc.
-- **Validação**: Quando validar, verificação estrita de tipos, etc.
-- **Exportação**: Formatos de exportação, delimitadores CSV, etc.
-- **Diretórios**: Locais personalizados para arquivos de diferentes tipos.
+## Advanced Features
 
-## Recursos Avançados
+### Data Validation
 
-### Validação de Dados
+The system automatically validates data against the model at various times:
 
-O sistema valida automaticamente os dados contra o modelo em vários momentos:
+-   When loading a data file
+-   When editing an entry
+-   Before saving (can be disabled in settings)
 
-- Ao carregar um arquivo de dados
-- Ao editar uma entrada
-- Antes de salvar (pode ser desativado nas configurações)
+Invalid entries are highlighted in the table view.
 
-Entradas inválidas são destacadas na visualização da tabela.
+### Drag and Drop
 
-### Arrastar e Soltar
+You can drag JSON files directly into the application window:
 
-Você pode arrastar arquivos JSON diretamente para a janela do aplicativo:
+-   If the file contains a `__meta__` object, it will be treated as a model.
+-   Otherwise, it will be treated as a data file.
 
-- Se o arquivo contiver um objeto `__meta__`, será tratado como um modelo.
-- Caso contrário, será tratado como um arquivo de dados.
+### Auto-Save
 
-### Salvamento Automático
+The system can automatically save data at regular intervals if configured:
 
-O sistema pode salvar automaticamente os dados em intervalos regulares, se configurado:
+1.  Go to Settings > Preferences > Files.
+2.  Set the auto-save interval in seconds (0 to disable).
 
-1. Acesse Configurações > Preferências > Arquivos.
-2. Defina o intervalo de salvamento automático em segundos (0 para desativar).
+## Troubleshooting
 
-## Solução de Problemas
+### Validation Errors
 
-### Erros de Validação
+If the data does not match the model, you will see detailed error messages:
 
-Se os dados não corresponderem ao modelo, você verá mensagens de erro detalhando os problemas:
+-   Missing required fields
+-   Incorrect data types
+-   Fields not defined in the model
 
-- Campos obrigatórios ausentes
-- Tipos de dados incorretos
-- Campos não definidos no modelo
+### Large Files
 
-### Arquivos Grandes
+For very large files, the system uses optimized processing:
 
-Para arquivos muito grandes, o sistema usa processamento otimizado:
+-   Loading in chunks
+-   Partial validation
+-   Optimized saving
 
-- Carregamento em chunks
-- Validação em partes
-- Salvamento otimizado
+The threshold for considering a file "large" can be adjusted in the settings.
 
-O limite para considerar um arquivo "grande" pode ser ajustado nas configurações.
+### Compatibility
 
-### Compatibilidade
+-   The system is designed to work on Windows, Linux, and macOS.
+-   Some features (like drag and drop) may depend on the operating system.
+-   Full drag-and-drop functionality on Windows requires the `pywin32` module.
 
-- O sistema foi projetado para funcionar em Windows, Linux e macOS.
-- Algumas funcionalidades (como arrastar e soltar) podem depender do sistema operacional.
-- A funcionalidade completa de arrastar e soltar no Windows requer o módulo pywin32.
+### Common Issues
 
-### Problemas Comuns
+1.  **Error loading model**: Check that the file contains a valid JSON object with a `__meta__` section.
+2.  **Error loading data**: Check that the file contains valid JSON.
+3.  **Validation error**: Ensure that the data follows the format defined in the model.
+4.  **Unresponsive interface**: For very large files, some operations may take longer.
 
-1. **Erro ao carregar modelo**: Verifique se o arquivo contém um objeto JSON válido com uma seção `__meta__`.
-2. **Erro ao carregar dados**: Verifique se o arquivo contém JSON válido.
-3. **Erro de validação**: Certifique-se de que os dados seguem o formato definido no modelo.
-4. **Interface não responsiva**: Para arquivos muito grandes, algumas operações podem levar mais tempo.
-
-Para mais informações, consulte a documentação completa ou entre em contato com o suporte.
+For more information, consult the full documentation or contact support.

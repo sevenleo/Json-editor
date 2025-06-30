@@ -240,55 +240,92 @@ class MultiFieldEditDialog(tk.Toplevel):
             return widget
                 
         elif field_type == "dict" or field_type == "object":
-            # Criar um frame para o dicionário com scrollbar e altura limitada
-            dict_container = ttk.Frame(parent)
-            canvas = tk.Canvas(dict_container, height=100)
-            scrollbar = ttk.Scrollbar(dict_container, orient="vertical", command=canvas.yview)
-            dict_frame = ttk.Frame(canvas)
+            # Verificar se há campos definidos no modelo
+            has_defined_fields = False
+            defined_fields = {}
             
-            # Configurar o canvas
-            canvas.configure(yscrollcommand=scrollbar.set)
-            canvas.pack(side="left", fill="both", expand=True)
-            scrollbar.pack(side="right", fill="y")
+            if self.json_model:
+                # Obter o nome do campo a partir do label
+                field_name_label = parent.grid_slaves(row=parent.grid_info()["row"], column=0)[0]
+                field_name = field_name_label.cget("text").replace(" *", "")
+
+                defined_fields = self.json_model.get_dict_fields(field_name)
+                has_defined_fields = bool(defined_fields)
             
-            # Criar janela no canvas para o frame
-            canvas_window = canvas.create_window((0, 0), window=dict_frame, anchor="nw")
-            
-            # Configurar o redimensionamento
-            def configure_scroll_region(event):
-                canvas.configure(scrollregion=canvas.bbox("all"))
-                canvas.itemconfig(canvas_window, width=event.width)
-            
-            dict_frame.bind("<Configure>", configure_scroll_region)
-            
-            # Criar widget composto
-            widget = ttk.Frame(parent)
-            widget.dict_frame = dict_frame
-            widget.entries = []
-            widget.canvas = canvas
-            
-            # Botões para adicionar/remover pares
-            btn_frame = ttk.Frame(widget)
-            btn_frame.pack(fill="x", side="bottom", pady=2)
-            
-            ttk.Button(btn_frame, text="Adicionar Par",
-                      command=lambda w=widget, df=dict_frame: self.add_dict_pair(w, df)).pack(side="left", padx=5)
-            ttk.Button(btn_frame, text="Remover Último",
-                      command=lambda w=widget: self.remove_dict_pair(w)).pack(side="left")
-            
-            # Adicionar o container ao widget principal
-            dict_container.pack(fill="both", expand=True)
-            
-            # Adicionar pares do dicionário atual
-            if current_value and isinstance(current_value, dict):
-                for key, value in current_value.items():
-                    self.add_dict_pair(widget, dict_frame, key, value)
-            
-            # Se o dicionário estiver vazio, adicionar um par em branco
-            if not widget.entries:
-                self.add_dict_pair(widget, dict_frame)
+            # Se houver campos definidos, usar botão para editar estrutura
+            if has_defined_fields:
+                # Criar widget composto
+                widget = ttk.Frame(parent)
+                widget.dict_value = current_value if current_value else {}
+                widget.field_specs = defined_fields
                 
-            return widget
+                # Exibir valor resumido
+                dict_preview = "{}"
+                if current_value and isinstance(current_value, dict):
+                    dict_preview = f"{{{len(current_value)} campos}}"
+                    
+                preview_label = ttk.Label(widget, text=dict_preview)
+                preview_label.pack(side="left", fill="x", expand=True)
+                
+                edit_button = ttk.Button(
+                    widget,
+                    text="Editar Estrutura",
+                    command=lambda w=widget, pl=preview_label: self.open_dict_dialog(w, pl)
+                )
+                edit_button.pack(side="right")
+                
+                return widget
+            else:
+                # Usar interface genérica para pares chave-valor
+                # Criar um frame para o dicionário com scrollbar e altura limitada
+                dict_container = ttk.Frame(parent)
+                canvas = tk.Canvas(dict_container, height=100)
+                scrollbar = ttk.Scrollbar(dict_container, orient="vertical", command=canvas.yview)
+                dict_frame = ttk.Frame(canvas)
+                
+                # Configurar o canvas
+                canvas.configure(yscrollcommand=scrollbar.set)
+                canvas.pack(side="left", fill="both", expand=True)
+                scrollbar.pack(side="right", fill="y")
+                
+                # Criar janela no canvas para o frame
+                canvas_window = canvas.create_window((0, 0), window=dict_frame, anchor="nw")
+                
+                # Configurar o redimensionamento
+                def configure_scroll_region(event):
+                    canvas.configure(scrollregion=canvas.bbox("all"))
+                    canvas.itemconfig(canvas_window, width=event.width)
+                
+                dict_frame.bind("<Configure>", configure_scroll_region)
+                
+                # Criar widget composto
+                widget = ttk.Frame(parent)
+                widget.dict_frame = dict_frame
+                widget.entries = []
+                widget.canvas = canvas
+                
+                # Botões para adicionar/remover pares
+                btn_frame = ttk.Frame(widget)
+                btn_frame.pack(fill="x", side="bottom", pady=2)
+                
+                ttk.Button(btn_frame, text="Adicionar Par",
+                           command=lambda w=widget, df=dict_frame: self.add_dict_pair(w, df)).pack(side="left", padx=5)
+                ttk.Button(btn_frame, text="Remover Último",
+                           command=lambda w=widget: self.remove_dict_pair(w)).pack(side="left")
+                
+                # Adicionar o container ao widget principal
+                dict_container.pack(fill="both", expand=True)
+                
+                # Adicionar pares do dicionário atual
+                if current_value and isinstance(current_value, dict):
+                    for key, value in current_value.items():
+                        self.add_dict_pair(widget, dict_frame, key, value)
+                
+                # Se o dicionário estiver vazio, adicionar um par em branco
+                if not widget.entries:
+                    self.add_dict_pair(widget, dict_frame)
+                    
+                return widget
         
         # Caso padrão
         widget = ttk.Entry(parent)
@@ -382,36 +419,35 @@ class MultiFieldEditDialog(tk.Toplevel):
                 return list_values
                 
             elif field_type == "dict" or field_type == "object":
-                # Coletar pares chave-valor dos campos de entrada
-                dict_values = {}
-                
-                for key_widget, value_widget in widget.entries:
-                    key = key_widget.get().strip()
-                    value = value_widget.get().strip()
-                    
-                    if key:  # Ignorar chaves vazias
-                        # Tentar detectar o tipo do valor automaticamente
-                        if not value:
-                            # Valor vazio, manter como string
-                            dict_values[key] = value
-                        elif value.lower() in ("true", "verdadeiro", "1", "sim", "s", "t"):
-                            dict_values[key] = True
-                        elif value.lower() in ("false", "falso", "0", "não", "nao", "n", "f"):
-                            dict_values[key] = False
-                        else:
-                            # Tentar converter para número
-                            try:
-                                if "." in value or "," in value:
-                                    # Substituir vírgula por ponto para float
-                                    value = value.replace(",", ".")
-                                    dict_values[key] = float(value)
+                # Verificar se este widget usa a interface estruturada (botão "Editar Estrutura")
+                if hasattr(widget, 'field_specs') and hasattr(widget, 'dict_value'):
+                    return widget.dict_value
+                else:
+                    # Usar a lógica para widgets de dicionário genérico (com pares chave-valor)
+                    dict_values = {}
+                    if hasattr(widget, 'entries'):
+                        for key_widget, value_widget in widget.entries:
+                            key = key_widget.get().strip()
+                            value = value_widget.get().strip()
+                            
+                            if key:
+                                # Tentar detectar o tipo do valor automaticamente
+                                if not value:
+                                    dict_values[key] = value
+                                elif value.lower() in ("true", "verdadeiro", "1", "sim", "s", "t"):
+                                    dict_values[key] = True
+                                elif value.lower() in ("false", "falso", "0", "não", "nao", "n", "f"):
+                                    dict_values[key] = False
                                 else:
-                                    dict_values[key] = int(value)
-                            except ValueError:
-                                # Se não for número, manter como string
-                                dict_values[key] = value
-                
-                return dict_values
+                                    try:
+                                        if "." in value or "," in value:
+                                            value = value.replace(",", ".")
+                                            dict_values[key] = float(value)
+                                        else:
+                                            dict_values[key] = int(value)
+                                    except ValueError:
+                                        dict_values[key] = value
+                    return dict_values
                 
             return None
             
@@ -547,3 +583,33 @@ class MultiFieldEditDialog(tk.Toplevel):
             # Atualizar a região de rolagem
             widget.canvas.update_idletasks()
             widget.canvas.configure(scrollregion=widget.canvas.bbox("all"))
+            
+    def open_dict_dialog(self, widget, preview_label):
+        """Abre um diálogo para editar um dicionário com campos definidos."""
+        from json_editor import EditDialog
+        
+        # Criar um diálogo para editar o dicionário
+        dialog = EditDialog(
+            self,
+            "Dicionário",
+            "dict",
+            widget.dict_value,
+            False,
+            self.theme
+        )
+        
+        # Configurar especificações dos campos, se disponíveis
+        if hasattr(widget, 'field_specs'):
+            dialog.value_widget.field_specs = widget.field_specs
+        
+        # Esperar pelo fechamento do diálogo
+        self.wait_window(dialog)
+        
+        # Processar resultado
+        if dialog.result is not None:
+            # Atualizar o valor do dicionário no widget
+            widget.dict_value = dialog.result
+            
+            # Atualizar a visualização
+            preview_text = f"{{{len(dialog.result)} campos}}"
+            preview_label.configure(text=preview_text)
