@@ -22,7 +22,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_DIRS = {
     "examples": os.path.join(BASE_DIR, "examples"),
     "backups": os.path.join(BASE_DIR, "backups"),
-    "templates": os.path.join(BASE_DIR, "templates"),
     "exports": os.path.join(BASE_DIR, "exports")
 }
 
